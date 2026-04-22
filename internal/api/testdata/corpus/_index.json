@@ -1,0 +1,6 @@
+{
+  "tools": [
+    {"slug": "tool-a", "display_name": "Tool A", "description": "Demo A.", "kind": "mcp", "categories": ["search"], "tags": ["demo"], "harnesses": ["claude-code","cursor"], "platforms": ["darwin","linux"]},
+    {"slug": "tool-b", "display_name": "Tool B", "description": "Demo B.", "kind": "cli",  "categories": ["git"],    "tags": [],       "harnesses": ["claude-code"],          "platforms": ["darwin","linux"]}
+  ]
+}
