@@ -34,6 +34,7 @@ type Server struct {
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/_health", s.handleHealth)
+	mux.HandleFunc("GET /api/tools/{slug}", s.handleTool)
 	// Later tasks add more routes here.
 	return mux
 }
