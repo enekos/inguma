@@ -10,54 +10,54 @@ const (
 
 // Tool is the canonical in-memory representation of an agentpop.yaml manifest.
 type Tool struct {
-	Name          string        `yaml:"name"`
-	DisplayName   string        `yaml:"display_name"`
-	Description   string        `yaml:"description"`
-	Readme        string        `yaml:"readme"`
-	Homepage      string        `yaml:"homepage,omitempty"`
-	License       string        `yaml:"license"`
-	Authors       []Author      `yaml:"authors,omitempty"`
-	Categories    []string      `yaml:"categories,omitempty"`
-	Tags          []string      `yaml:"tags,omitempty"`
-	Kind          Kind          `yaml:"kind"`
-	MCP           *MCPConfig    `yaml:"mcp,omitempty"`
-	CLI           *CLIConfig    `yaml:"cli,omitempty"`
-	Compatibility Compatibility `yaml:"compatibility"`
+	Name          string        `yaml:"name" json:"name"`
+	DisplayName   string        `yaml:"display_name" json:"display_name"`
+	Description   string        `yaml:"description" json:"description"`
+	Readme        string        `yaml:"readme" json:"readme"`
+	Homepage      string        `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License       string        `yaml:"license" json:"license"`
+	Authors       []Author      `yaml:"authors,omitempty" json:"authors,omitempty"`
+	Categories    []string      `yaml:"categories,omitempty" json:"categories,omitempty"`
+	Tags          []string      `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Kind          Kind          `yaml:"kind" json:"kind"`
+	MCP           *MCPConfig    `yaml:"mcp,omitempty" json:"mcp,omitempty"`
+	CLI           *CLIConfig    `yaml:"cli,omitempty" json:"cli,omitempty"`
+	Compatibility Compatibility `yaml:"compatibility" json:"compatibility"`
 }
 
 type Author struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url,omitempty"`
+	Name string `yaml:"name" json:"name"`
+	URL  string `yaml:"url,omitempty" json:"url,omitempty"`
 }
 
 type MCPConfig struct {
-	Transport string   `yaml:"transport"` // "stdio" | "http"
-	Command   string   `yaml:"command,omitempty"`
-	Args      []string `yaml:"args,omitempty"`
-	URL       string   `yaml:"url,omitempty"`
-	Env       []EnvVar `yaml:"env,omitempty"`
+	Transport string   `yaml:"transport" json:"transport"` // "stdio" | "http"
+	Command   string   `yaml:"command,omitempty" json:"command,omitempty"`
+	Args      []string `yaml:"args,omitempty" json:"args,omitempty"`
+	URL       string   `yaml:"url,omitempty" json:"url,omitempty"`
+	Env       []EnvVar `yaml:"env,omitempty" json:"env,omitempty"`
 }
 
 type EnvVar struct {
-	Name        string `yaml:"name"`
-	Required    bool   `yaml:"required"`
-	Description string `yaml:"description,omitempty"`
+	Name        string `yaml:"name" json:"name"`
+	Required    bool   `yaml:"required" json:"required"`
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
 }
 
 type CLIConfig struct {
-	Install []InstallSource `yaml:"install"`
-	Bin     string          `yaml:"bin"`
+	Install []InstallSource `yaml:"install" json:"install"`
+	Bin     string          `yaml:"bin" json:"bin"`
 }
 
 type InstallSource struct {
-	Type           string `yaml:"type"` // "npm" | "go" | "binary"
-	Package        string `yaml:"package,omitempty"`
-	Module         string `yaml:"module,omitempty"`
-	URLTemplate    string `yaml:"url_template,omitempty"`
-	SHA256Template string `yaml:"sha256_template,omitempty"`
+	Type           string `yaml:"type" json:"type"` // "npm" | "go" | "binary"
+	Package        string `yaml:"package,omitempty" json:"package,omitempty"`
+	Module         string `yaml:"module,omitempty" json:"module,omitempty"`
+	URLTemplate    string `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	SHA256Template string `yaml:"sha256_template,omitempty" json:"sha256_template,omitempty"`
 }
 
 type Compatibility struct {
-	Harnesses []string `yaml:"harnesses"`
-	Platforms []string `yaml:"platforms"`
+	Harnesses []string `yaml:"harnesses" json:"harnesses"`
+	Platforms []string `yaml:"platforms" json:"platforms"`
 }
