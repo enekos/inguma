@@ -1,0 +1,12 @@
+{
+  "name": "tool-a",
+  "display_name": "Tool A",
+  "description": "Demo A.",
+  "readme": "README.md",
+  "license": "MIT",
+  "kind": "mcp",
+  "mcp": {"transport": "stdio", "command": "echo", "args": ["hi"]},
+  "compatibility": {"harnesses": ["claude-code","cursor"], "platforms": ["darwin","linux"]},
+  "categories": ["search"],
+  "tags": ["demo"]
+}

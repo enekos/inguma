@@ -1,9 +1,9 @@
-.PHONY: build test vet fmt crawler
+.PHONY: build test vet fmt crawler apid
 
 GO := go
 BIN := bin
 
-build: crawler
+build: crawler apid
 
 crawler:
 	$(GO) build -o $(BIN)/crawler ./cmd/crawler
@@ -16,3 +16,6 @@ vet:
 
 fmt:
 	$(GO) fmt ./...
+
+apid:
+	$(GO) build -o $(BIN)/apid ./cmd/apid
