@@ -35,6 +35,8 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/_health", s.handleHealth)
 	mux.HandleFunc("GET /api/tools/{slug}", s.handleTool)
+	mux.HandleFunc("GET /api/categories", s.handleCategories)
+	mux.HandleFunc("GET /api/tools", s.handleBrowse)
 	// Later tasks add more routes here.
 	return mux
 }
