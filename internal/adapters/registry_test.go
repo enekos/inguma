@@ -9,14 +9,14 @@ import (
 
 type fakeAdapter struct{ id string }
 
-func (f fakeAdapter) ID() string                                  { return f.id }
-func (f fakeAdapter) DisplayName() string                         { return f.id }
-func (f fakeAdapter) Detect() (bool, string)                      { return false, "" }
+func (f fakeAdapter) ID() string             { return f.id }
+func (f fakeAdapter) DisplayName() string    { return f.id }
+func (f fakeAdapter) Detect() (bool, string) { return false, "" }
 func (f fakeAdapter) Snippet(m manifest.Tool) (snippets.Snippet, error) {
 	return snippets.Snippet{HarnessID: f.id}, nil
 }
 func (f fakeAdapter) Install(m manifest.Tool, o InstallOpts) error { return nil }
-func (f fakeAdapter) Uninstall(slug string) error                   { return nil }
+func (f fakeAdapter) Uninstall(slug string) error                  { return nil }
 
 func TestRegistry(t *testing.T) {
 	r := NewRegistry()

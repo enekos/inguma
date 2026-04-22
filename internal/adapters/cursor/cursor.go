@@ -19,8 +19,8 @@ type Adapter struct {
 	configPath string
 }
 
-func New() *Adapter                  { return &Adapter{} }
-func NewWithPath(p string) *Adapter  { return &Adapter{configPath: p} }
+func New() *Adapter                 { return &Adapter{} }
+func NewWithPath(p string) *Adapter { return &Adapter{configPath: p} }
 
 func (a *Adapter) ID() string          { return "cursor" }
 func (a *Adapter) DisplayName() string { return "Cursor" }

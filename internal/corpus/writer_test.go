@@ -64,7 +64,7 @@ func TestWriteTool(t *testing.T) {
 func TestWriteIndex(t *testing.T) {
 	dir := t.TempDir()
 	entries := []IndexEntry{
-		{Slug: "a", DisplayName: "A", Description: "first",  Kind: "mcp"},
+		{Slug: "a", DisplayName: "A", Description: "first", Kind: "mcp"},
 		{Slug: "b", DisplayName: "B", Description: "second", Kind: "cli"},
 	}
 	if err := WriteIndex(dir, entries); err != nil {
@@ -104,4 +104,9 @@ func TestWriteCrawlSummary(t *testing.T) {
 	}
 }
 
-func min(a, b int) int { if a < b { return a }; return b }
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

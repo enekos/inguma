@@ -78,8 +78,8 @@ func (a *Adapter) Snippet(m manifest.Tool) (snippets.Snippet, error) {
 			}
 		}
 		obj := map[string]any{
-			"_comment":  "Install " + m.CLI.Bin + " with one of:",
-			"_install":  lines,
+			"_comment": "Install " + m.CLI.Bin + " with one of:",
+			"_install": lines,
 		}
 		b, err := json.MarshalIndent(obj, "", "  ")
 		if err != nil {
