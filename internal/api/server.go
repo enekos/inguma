@@ -37,6 +37,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/tools/{slug}", s.handleTool)
 	mux.HandleFunc("GET /api/categories", s.handleCategories)
 	mux.HandleFunc("GET /api/tools", s.handleBrowse)
+	mux.HandleFunc("GET /api/install/{slug}", s.handleInstall)
 	// Later tasks add more routes here.
 	return mux
 }
