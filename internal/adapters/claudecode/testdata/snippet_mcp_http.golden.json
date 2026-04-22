@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "http-tool": {
+      "type": "http",
+      "url": "https://mcp.example.com"
+    }
+  }
+}
