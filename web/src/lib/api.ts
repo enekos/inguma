@@ -1,6 +1,7 @@
 // Thin typed wrapper around apid. Every call uses the `fetch` passed in by
 // SvelteKit load functions so SSR works and cookies/auth-headers are forwarded.
 
+import { env } from '$env/dynamic/private';
 import type {
   CategoryCount,
   IndexEntry,
@@ -17,7 +18,7 @@ function baseURL(): string {
   // In production the frontend is proxied by Caddy so /api/* is same-origin.
   // In dev we fall back to localhost:8091 (where `bin/apid` runs).
   if (typeof window !== 'undefined') return '';
-  return process.env.AGENTPOP_API_URL ?? DEFAULT_BASE;
+  return env.AGENTPOP_API_URL ?? DEFAULT_BASE;
 }
 
 async function getJSON<T>(fetchFn: Fetch, path: string): Promise<T> {
