@@ -1,0 +1,7 @@
+{
+  "_comment": "Install my-cli with one of:",
+  "_install": [
+    "npm install -g @scope/my-cli",
+    "download https://example.com/my-cli-{os}-{arch}"
+  ]
+}

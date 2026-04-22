@@ -1,0 +1,5 @@
+tools:
+  - repo: https://github.com/example/tool-a
+    ref: main
+  - repo: https://github.com/example/tool-b
+    ref: v1.2.0

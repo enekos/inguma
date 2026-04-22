@@ -1,0 +1,7 @@
+tools:
+  - repo: tool-a
+    ref: main
+  - repo: tool-b
+    ref: main
+  - repo: missing-tool
+    ref: main

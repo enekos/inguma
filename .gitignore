@@ -1,0 +1,17 @@
+# Build artifacts
+/bin/
+*.exe
+
+# Generated corpus (not source of truth)
+/corpus/
+
+# Local state
+*.db
+*.db-shm
+*.db-wal
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

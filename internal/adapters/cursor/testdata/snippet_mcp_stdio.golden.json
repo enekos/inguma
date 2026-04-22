@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "my-tool": {
+      "command": "npx",
+      "args": ["-y", "@scope/pkg"],
+      "env": {
+        "API_KEY": "${API_KEY}"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+name: my-cli
+display_name: My CLI
+description: A demo CLI tool.
+readme: README.md
+license: MIT
+categories: [git]
+kind: cli
+cli:
+  install:
+    - type: npm
+      package: "@scope/my-cli"
+    - type: binary
+      url_template: "https://example.com/my-cli-{os}-{arch}"
+      sha256_template: "https://example.com/my-cli-{os}-{arch}.sha256"
+  bin: my-cli
+compatibility:
+  harnesses: [claude-code]
+  platforms: [darwin, linux]

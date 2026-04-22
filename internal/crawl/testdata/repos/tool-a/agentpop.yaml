@@ -1,0 +1,13 @@
+name: tool-a
+display_name: Tool A
+description: Fixture tool A.
+readme: README.md
+license: MIT
+kind: mcp
+mcp:
+  transport: stdio
+  command: echo
+  args: ["hello-a"]
+compatibility:
+  harnesses: [claude-code]
+  platforms: [darwin, linux]

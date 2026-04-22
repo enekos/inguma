@@ -1,0 +1,13 @@
+name: http-tool
+display_name: HTTP Tool
+description: A remote MCP tool.
+readme: README.md
+license: Apache-2.0
+categories: [search]
+kind: mcp
+mcp:
+  transport: http
+  url: https://mcp.example.com
+compatibility:
+  harnesses: ["*"]
+  platforms: [darwin, linux, windows]

@@ -1,0 +1,9 @@
+name: bad
+display_name: Bad
+description: Unsupported kind.
+readme: README.md
+license: MIT
+kind: skill
+compatibility:
+  harnesses: [claude-code]
+  platforms: [darwin]
