@@ -128,13 +128,3 @@ func mcpServerEntry(m manifest.Tool) map[string]any {
 var _ adapters.Adapter = (*Adapter)(nil)
 
 // Install / Uninstall live in install.go (added in Task 8).
-
-// Install is implemented in Task 8.
-func (a *Adapter) Install(m manifest.Tool, o adapters.InstallOpts) error {
-	return fmt.Errorf("claudecode: Install not yet implemented")
-}
-
-// Uninstall is implemented in Task 8.
-func (a *Adapter) Uninstall(slug string) error {
-	return fmt.Errorf("claudecode: Uninstall not yet implemented")
-}
