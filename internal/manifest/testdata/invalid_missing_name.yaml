@@ -1,0 +1,11 @@
+display_name: No Name
+description: Missing name field.
+readme: README.md
+license: MIT
+kind: mcp
+mcp:
+  transport: stdio
+  command: x
+compatibility:
+  harnesses: [claude-code]
+  platforms: [darwin]

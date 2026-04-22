@@ -1,0 +1,13 @@
+name: bad
+display_name: Bad
+description: Has an unknown top-level key.
+readme: README.md
+license: MIT
+kind: mcp
+mcp:
+  transport: stdio
+  command: x
+compatibility:
+  harnesses: [claude-code]
+  platforms: [darwin]
+whatever: nope
