@@ -1,0 +1,14 @@
+name: tool-b
+display_name: Tool B
+description: Fixture tool B.
+readme: README.md
+license: Apache-2.0
+kind: cli
+cli:
+  install:
+    - type: npm
+      package: "@scope/tool-b"
+  bin: tool-b
+compatibility:
+  harnesses: [claude-code, cursor]
+  platforms: [darwin, linux]
