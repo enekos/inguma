@@ -1,0 +1,23 @@
+name: my-tool
+display_name: My Tool
+description: A demo MCP tool.
+readme: README.md
+homepage: https://example.com
+license: MIT
+authors:
+  - name: Alice
+    url: https://example.com/alice
+categories: [search]
+tags: [demo]
+kind: mcp
+mcp:
+  transport: stdio
+  command: npx
+  args: ["-y", "@scope/pkg"]
+  env:
+    - name: API_KEY
+      required: true
+      description: API key for the service
+compatibility:
+  harnesses: [claude-code, cursor]
+  platforms: [darwin, linux]
