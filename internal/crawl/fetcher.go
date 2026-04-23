@@ -18,13 +18,16 @@ type Fetcher interface {
 	// ListTags returns the raw tag names for a repo (e.g. "v1.0.0", "v1.2.3").
 	// Implementations must return an empty slice (not an error) when there are no tags.
 	ListTags(repo string) ([]string, error)
+	// HeadCommit returns the SHA of the HEAD commit for the given repo.
+	HeadCommit(repo string) (string, error)
 }
 
 // LocalFetcher serves local directories as "repos". Used in tests.
 // `repo` is treated as a subdirectory name under root.
 type LocalFetcher struct {
-	root string
-	tags map[string][]string
+	root  string
+	tags  map[string][]string
+	heads map[string]string
 }
 
 func NewLocalFetcher(root string) *LocalFetcher { return &LocalFetcher{root: root} }
@@ -56,6 +59,24 @@ func (l *LocalFetcher) ListTags(repo string) ([]string, error) {
 	return l.tags[filepath.Base(repo)], nil
 }
 
+// SetHead stores a HEAD SHA for a repo (by basename). Used in tests.
+func (l *LocalFetcher) SetHead(repo, sha string) {
+	if l.heads == nil {
+		l.heads = make(map[string]string)
+	}
+	l.heads[filepath.Base(repo)] = sha
+}
+
+// HeadCommit returns the preset HEAD SHA for repo (by basename), or errors if unset.
+func (l *LocalFetcher) HeadCommit(repo string) (string, error) {
+	if l.heads != nil {
+		if sha, ok := l.heads[filepath.Base(repo)]; ok {
+			return sha, nil
+		}
+	}
+	return "", fmt.Errorf("LocalFetcher: no HEAD set for %s", repo)
+}
+
 // GitFetcher shallow-clones repos via the `git` CLI. Cache directory is reused
 // across Fetch calls; each call clones into a fresh subdir keyed by repo+ref.
 type GitFetcher struct{ cacheDir string }
@@ -80,6 +101,26 @@ func (g *GitFetcher) Fetch(repo, ref string) (string, error) {
 		return "", fmt.Errorf("GitFetcher: clone %s@%s: %w", repo, ref, err)
 	}
 	return dest, nil
+}
+
+// HeadCommit runs `git ls-remote <repo> HEAD` and returns the commit SHA.
+func (g *GitFetcher) HeadCommit(repo string) (string, error) {
+	cmd := exec.Command("git", "ls-remote", repo, "HEAD")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("GitFetcher: ls-remote HEAD %s: %w", repo, err)
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.SplitN(line, "\t", 2)
+		if len(parts) == 2 && parts[1] == "HEAD" {
+			return parts[0], nil
+		}
+	}
+	return "", fmt.Errorf("GitFetcher: no HEAD ref found for %s", repo)
 }
 
 // ListTags runs `git ls-remote --tags <repo>` and returns the raw tag names.

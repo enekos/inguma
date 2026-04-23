@@ -87,6 +87,24 @@ func processVersionedEntry(opts VersionedOptions, log *slog.Logger, store artifa
 	}
 
 	versions := versioning.ScanTags(tags)
+	if len(versions) == 0 {
+		head, err := opts.Fetcher.HeadCommit(e.Repo)
+		if err != nil {
+			log.Warn("versioned crawl: HeadCommit failed", "repo", e.Repo, "err", err)
+			stats.Failed = append(stats.Failed, FailedEntry{Repo: e.Repo, Version: "HEAD", Error: err.Error()})
+			return nil
+		}
+		wrote, err := ingestSynthetic(opts, log, e, owner, head)
+		if err != nil {
+			log.Warn("versioned crawl: ingest synthetic failed", "repo", e.Repo, "err", err)
+			stats.Failed = append(stats.Failed, FailedEntry{Repo: e.Repo, Version: "v0.0.0", Error: err.Error()})
+			return nil
+		}
+		if wrote {
+			stats.NewVersions++
+		}
+		return nil
+	}
 	for _, v := range versions {
 		canonical := v.Canonical()
 		if corpus.HasVersion(opts.CorpusDir, owner, slugHint, canonical) {
@@ -100,6 +118,15 @@ func processVersionedEntry(opts VersionedOptions, log *slog.Logger, store artifa
 		stats.NewVersions++
 	}
 	return nil
+}
+
+// resolveSlug extracts the slug from a manifest name, stripping any @owner/ prefix.
+func resolveSlug(name string) (string, error) {
+	n, err := namespace.Parse(name)
+	if err != nil {
+		return "", fmt.Errorf("parse manifest name: %w", err)
+	}
+	return n.Slug, nil
 }
 
 func ingestVersion(opts VersionedOptions, log *slog.Logger, store artifacts.Store, e registry.Entry, owner, slugHint string, v versioning.Version) error {
@@ -119,11 +146,10 @@ func ingestVersion(opts VersionedOptions, log *slog.Logger, store artifacts.Stor
 	}
 
 	// Derive the slug from the manifest name, warn if it differs from slugHint.
-	n, err := namespace.Parse(mf.Name)
+	slug, err := resolveSlug(mf.Name)
 	if err != nil {
-		return fmt.Errorf("parse manifest name: %w", err)
+		return err
 	}
-	slug := n.Slug
 	if slug != slugHint {
 		log.Warn("versioned crawl: manifest slug differs from repo slug hint",
 			"manifest_slug", slug, "slug_hint", slugHint, "repo", e.Repo)
@@ -168,6 +194,99 @@ func ingestVersion(opts VersionedOptions, log *slog.Logger, store artifacts.Stor
 		IndexMD:      indexMD,
 		ArtifactSHA:  sha,
 	})
+}
+
+// ingestSynthetic creates or replaces a synthetic v0.0.0 entry for a repo with no semver tags.
+// Returns (true, nil) when a new or updated entry was written, (false, nil) when the existing
+// synthetic entry is already up-to-date.
+func ingestSynthetic(opts VersionedOptions, log *slog.Logger, entry registry.Entry, owner, headSHA string) (bool, error) {
+	repoPath, err := opts.Fetcher.Fetch(entry.Repo, entry.Ref)
+	if err != nil {
+		return false, fmt.Errorf("fetch %s@%s: %w", entry.Repo, entry.Ref, err)
+	}
+	mf, err := manifest.ParseFile(filepath.Join(repoPath, "agentpop.yaml"))
+	if err != nil {
+		return false, fmt.Errorf("parse manifest: %w", err)
+	}
+	if err := manifest.ValidateWithOwner(mf, owner); err != nil {
+		return false, fmt.Errorf("validate manifest: %w", err)
+	}
+
+	slug, err := resolveSlug(mf.Name)
+	if err != nil {
+		return false, err
+	}
+
+	// Skip if existing synthetic ref matches current HEAD.
+	if existing := readExistingSyntheticRefFor(opts.CorpusDir, owner, slug); existing == headSHA {
+		log.Info("versioned crawl: synthetic v0.0.0 up-to-date", "repo", entry.Repo, "sha", headSHA)
+		return false, nil
+	}
+
+	// Remove previous synthetic entry if any.
+	_ = os.RemoveAll(filepath.Join(opts.CorpusDir, owner, slug, "versions", "v0.0.0"))
+	_ = os.Remove(filepath.Join(opts.ArtifactsDir, owner, slug, "v0.0.0.tgz"))
+	_ = os.Remove(filepath.Join(opts.ArtifactsDir, owner, slug, "v0.0.0.tgz.sha256"))
+
+	// Mark synthetic fields on the manifest snapshot.
+	mf.Synthetic = true
+	mf.SyntheticRef = headSHA
+
+	readme, err := os.ReadFile(filepath.Join(repoPath, mf.Readme))
+	if err != nil {
+		return false, fmt.Errorf("read readme %s: %w", mf.Readme, err)
+	}
+
+	mfJSON, err := json.MarshalIndent(mf, "", "  ")
+	if err != nil {
+		return false, fmt.Errorf("marshal manifest: %w", err)
+	}
+
+	indexMD := buildIndexMD(mf, readme)
+
+	var buf bytes.Buffer
+	if err := artifacts.Build(&buf, artifacts.Input{
+		Owner:    owner,
+		Slug:     slug,
+		Version:  "v0.0.0",
+		Manifest: mfJSON,
+		Readme:   readme,
+	}); err != nil {
+		return false, fmt.Errorf("build artifact: %w", err)
+	}
+
+	store := artifacts.NewFSStore(opts.ArtifactsDir)
+	sha, err := store.Put(artifacts.Ref{Owner: owner, Slug: slug, Version: "v0.0.0"}, &buf)
+	if err != nil {
+		return false, fmt.Errorf("store artifact: %w", err)
+	}
+
+	if err := corpus.WriteVersion(opts.CorpusDir, corpus.VersionedEntry{
+		Owner:        owner,
+		Slug:         slug,
+		Version:      "v0.0.0",
+		ManifestJSON: mfJSON,
+		IndexMD:      indexMD,
+		ArtifactSHA:  sha,
+	}); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// readExistingSyntheticRefFor reads the synthetic_ref from an existing v0.0.0 manifest.json,
+// returning "" if the file does not exist or cannot be parsed.
+func readExistingSyntheticRefFor(corpusDir, owner, slug string) string {
+	p := filepath.Join(corpusDir, owner, slug, "versions", "v0.0.0", "manifest.json")
+	data, err := os.ReadFile(p)
+	if err != nil {
+		return ""
+	}
+	var m struct {
+		SyntheticRef string `json:"synthetic_ref"`
+	}
+	_ = json.Unmarshal(data, &m)
+	return m.SyntheticRef
 }
 
 // buildIndexMD produces the YAML-frontmatter + README body for a versioned corpus entry.

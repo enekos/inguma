@@ -24,6 +24,8 @@ type Tool struct {
 	MCP           *MCPConfig    `yaml:"mcp,omitempty" json:"mcp,omitempty"`
 	CLI           *CLIConfig    `yaml:"cli,omitempty" json:"cli,omitempty"`
 	Compatibility Compatibility `yaml:"compatibility" json:"compatibility"`
+	Synthetic    bool          `yaml:"synthetic,omitempty" json:"synthetic,omitempty"`
+	SyntheticRef string        `yaml:"synthetic_ref,omitempty" json:"synthetic_ref,omitempty"`
 }
 
 type Author struct {
