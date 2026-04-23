@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -52,5 +54,53 @@ func TestTools_rejectsBadSlug(t *testing.T) {
 	s.Handler().ServeHTTP(w, r)
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("code = %d", w.Code)
+	}
+}
+
+func TestBareSlugRedirectsWhenUnique(t *testing.T) {
+	dir := seedVersionedCorpus(t)
+	h := newAPI(t, dir)
+	req := httptest.NewRequest("GET", "/api/tools/bar", nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusMovedPermanently {
+		t.Fatalf("status=%d want 301", rec.Code)
+	}
+	if rec.Header().Get("Location") != "/api/tools/@foo/bar" {
+		t.Fatalf("location=%q", rec.Header().Get("Location"))
+	}
+}
+
+func TestBareSlugFallsBackToV1WhenNoVersionedEntry(t *testing.T) {
+	// Empty versioned corpus: no @owner/baz exists. But set up a v1 corpus entry.
+	dir := t.TempDir()
+	// Write a valid v1 layout corpus/<slug>/{manifest.json,index.md}.
+	slugDir := filepath.Join(dir, "baz")
+	if err := os.MkdirAll(slugDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	mf := []byte(`{"name":"baz","display_name":"Baz","description":"x","readme":"README.md","license":"MIT","kind":"mcp","mcp":{"transport":"stdio","command":"true"},"compatibility":{"harnesses":["claude-code"],"platforms":["darwin"]}}`)
+	if err := os.WriteFile(filepath.Join(slugDir, "manifest.json"), mf, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(slugDir, "index.md"), []byte("---\nslug: baz\n---\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	h := newAPI(t, dir)
+	req := httptest.NewRequest("GET", "/api/tools/baz", nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != 200 {
+		t.Fatalf("status=%d body=%s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestBareSlugNoMatchReturns404(t *testing.T) {
+	h := newAPI(t, t.TempDir())
+	req := httptest.NewRequest("GET", "/api/tools/nope", nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != 404 {
+		t.Fatalf("status=%d", rec.Code)
 	}
 }
