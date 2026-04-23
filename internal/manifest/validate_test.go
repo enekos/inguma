@@ -59,3 +59,28 @@ func TestValidate_valid(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateWithRegistryOwner(t *testing.T) {
+	base := Tool{
+		Name: "bar", DisplayName: "Bar", Description: "x", Readme: "README.md",
+		License: "MIT", Kind: KindMCP,
+		MCP: &MCPConfig{Transport: "stdio", Command: "x"},
+		Compatibility: Compatibility{Harnesses: []string{"claude-code"}, Platforms: []string{"darwin"}},
+	}
+	// Bare name is allowed regardless of registry owner.
+	if err := ValidateWithOwner(&base, "foo"); err != nil {
+		t.Fatalf("bare: expected ok, got %v", err)
+	}
+	// Matching @foo/bar is allowed.
+	m2 := base
+	m2.Name = "@foo/bar"
+	if err := ValidateWithOwner(&m2, "foo"); err != nil {
+		t.Fatalf("@foo/bar under foo: expected ok, got %v", err)
+	}
+	// Mismatched owner is rejected.
+	m3 := base
+	m3.Name = "@other/bar"
+	if err := ValidateWithOwner(&m3, "foo"); err == nil {
+		t.Fatal("expected owner mismatch error")
+	}
+}
