@@ -10,6 +10,8 @@ import (
 	"net/http"
 
 	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/agentpop/internal/artifacts"
+	"github.com/enekos/agentpop/internal/db"
 	"github.com/enekos/agentpop/internal/marrow"
 )
 
@@ -27,6 +29,10 @@ type Server struct {
 	Marrow MarrowSearcher
 	// Adapters is the set of harness adapters used to render /api/install snippets.
 	Adapters *adapters.Registry
+	// Store is the artifact blob store (optional; returns 503 if nil).
+	Store artifacts.Store
+	// DB is the SQLite download-counter store (optional; skipped if nil).
+	DB *db.DB
 }
 
 // Handler builds and returns the HTTP handler. Registering routes in one place
@@ -42,6 +48,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/tools", s.handleBrowse)
 	mux.HandleFunc("GET /api/install/{slug}", s.handleInstall)
 	mux.HandleFunc("GET /api/search", s.handleSearch)
+	mux.HandleFunc("GET /api/artifacts/{ownerAt}/{slug}/{versionAt}", s.handleArtifact)
 	// Later tasks add more routes here.
 	return mux
 }
