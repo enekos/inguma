@@ -24,7 +24,7 @@ func TestHealth(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &parsed); err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	if parsed.Status != "ok" || parsed.ToolCount != 2 || parsed.FailedCount != 0 {
+	if parsed.Status != "ok" || parsed.ToolCount != 3 || parsed.FailedCount != 0 {
 		t.Errorf("got = %+v", parsed)
 	}
 }

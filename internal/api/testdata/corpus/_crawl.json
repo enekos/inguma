@@ -1,1 +1,1 @@
-{"started_at":"2026-04-22T00:00:00Z","ended_at":"2026-04-22T00:00:10Z","ok":["tool-a","tool-b"],"failed":[]}
+{"started_at":"2026-04-22T00:00:00Z","ended_at":"2026-04-22T00:00:10Z","ok":["mairu","tool-a","tool-b"],"failed":[]}

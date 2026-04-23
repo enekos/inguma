@@ -1,0 +1,21 @@
+{
+	"name": "mairu",
+	"display_name": "Mairu",
+	"description": "Opinionated semantically aware coding agent that lifts rocks",
+	"readme": "README.md",
+	"license": "BlueOak-1.0.0",
+	"kind": "cli",
+	"cli": {
+		"install": [
+			{
+				"type": "go",
+				"module": "github.com/enekos/mairu/mairu"
+			}
+		],
+		"bin": "mairu"
+	},
+	"compatibility": {
+		"harnesses": ["*"],
+		"platforms": ["darwin", "linux"]
+	}
+}

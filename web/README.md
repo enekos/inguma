@@ -1,42 +1,60 @@
-# sv
+# Agentpop Web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit frontend for the Agentpop marketplace.
 
-## Creating a project
+## Prerequisites
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Node.js 22+
+- The Go backend (`apid`) running on `localhost:8091`
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Quick start
 
-To recreate this project with the same configuration:
+From the repo root, run the dev stack:
 
 ```sh
-# recreate this project
-npx sv@0.15.1 create --template minimal --types ts --no-install .
+make dev
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Or manually:
 
 ```sh
-npm run dev
+# Terminal 1: start the API server
+cd .. && make apid && bin/apid -addr :8091 -corpus internal/api/testdata/corpus
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# Terminal 2: start the frontend
+cd web && npm run dev
 ```
 
-## Building
-
-To create a production version of your app:
+Copy environment variables if needed:
 
 ```sh
-npm run build
+cp .env.example .env
 ```
 
-You can preview the production build with `npm run preview`.
+## Scripts
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| Script                 | Description                    |
+| ---------------------- | ------------------------------ |
+| `npm run dev`          | Start Vite dev server          |
+| `npm run build`        | Production build               |
+| `npm run preview`      | Preview production build       |
+| `npm run check`        | Svelte type-check              |
+| `npm run check:watch`  | Svelte type-check (watch mode) |
+| `npm run test:e2e`     | Playwright E2E tests           |
+| `npm run lint`         | ESLint                         |
+| `npm run format`       | Prettier                       |
+| `npm run format:check` | Prettier (check only)          |
+
+## E2E tests
+
+Playwright tests require `apid` to be running. The easiest way is:
+
+```sh
+make test-e2e   # from repo root
+```
+
+Or from `web/` with a manually started API:
+
+```sh
+npm run test:e2e
+```

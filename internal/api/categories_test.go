@@ -51,7 +51,7 @@ func TestBrowseAll(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &parsed); err != nil {
 		t.Fatal(err)
 	}
-	if len(parsed.Tools) != 2 {
+	if len(parsed.Tools) != 3 {
 		t.Errorf("got %d tools", len(parsed.Tools))
 	}
 }

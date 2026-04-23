@@ -2,6 +2,11 @@
 
 /* Design tokens — switched by the .dark class on <html>. */
 :root {
-  color-scheme: light dark;
+	color-scheme: light dark;
 }
-html { font-family: system-ui, -apple-system, sans-serif; }
+html {
+	font-family:
+		system-ui,
+		-apple-system,
+		sans-serif;
+}
