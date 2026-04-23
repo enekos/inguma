@@ -91,11 +91,18 @@ func runInstall(ctx context.Context, args []string, stdout, stderr io.Writer) in
 	harness := fs.String("harness", "", "comma-separated harness IDs (default: all detected)")
 	dryRun := fs.Bool("dry-run", false, "print the diff without applying")
 	yes := fs.Bool("y", false, "skip confirmation")
+	rangeSpec := fs.String("range", "", "semver range, e.g. ^1.2 (versioned slugs only)")
+	lockDir := fs.String("lock-dir", "", "directory containing agentpop.lock (default: cwd; use - to disable)")
+	frozen := fs.Bool("frozen", false, "refuse to resolve anything not pinned in agentpop.lock")
+	slugArg := ""
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
-	if fs.NArg() == 0 {
-		fmt.Fprintln(stderr, "install: slug required")
+	if fs.NArg() > 0 {
+		slugArg = fs.Arg(0)
+	}
+	if !*frozen && slugArg == "" {
+		fmt.Fprintln(stderr, "install: slug required (or pass --frozen to install every lockfile entry)")
 		return 2
 	}
 	err := clicmd.Install(ctx, clicmd.InstallDeps{
@@ -104,10 +111,13 @@ func runInstall(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		StatePath: state.DefaultPath(),
 		Stdout:    stdout,
 	}, clicmd.InstallArgs{
-		Slug:      fs.Arg(0),
+		Slug:      slugArg,
 		Harnesses: parseHarnesses(*harness),
 		DryRun:    *dryRun,
 		AssumeYes: *yes,
+		RangeSpec: *rangeSpec,
+		LockDir:   *lockDir,
+		Frozen:    *frozen,
 	})
 	if err != nil {
 		fmt.Fprintln(stderr, "agentpop:", err)
