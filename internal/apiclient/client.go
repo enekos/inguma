@@ -1,4 +1,4 @@
-// Package apiclient is the agentpop CLI's HTTP client for the apid API.
+// Package apiclient is the inguma CLI's HTTP client for the apid API.
 package apiclient
 
 import (
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // ToolResponse mirrors GET /api/tools/{slug}.
@@ -53,7 +53,7 @@ type Client struct {
 	http    *http.Client
 }
 
-// New returns a client rooted at baseURL (e.g. "https://agentpop.example").
+// New returns a client rooted at baseURL (e.g. "https://inguma.example").
 func New(baseURL string) *Client {
 	return &Client{
 		baseURL: strings.TrimRight(baseURL, "/"),
@@ -112,6 +112,64 @@ func (c *Client) Search(q string, f *SearchFilters) ([]SearchHit, error) {
 		return nil, err
 	}
 	return out.Results, nil
+}
+
+// VersionedInstallResponse mirrors GET /api/install/@{owner}/{slug} and .../@{version}.
+type VersionedInstallResponse struct {
+	Owner           string `json:"owner"`
+	Slug            string `json:"slug"`
+	ResolvedVersion string `json:"resolved_version"`
+	SHA256          string `json:"sha256"`
+	CLI             struct {
+		Command string `json:"command"`
+	} `json:"cli"`
+	Snippets []struct {
+		HarnessID   string `json:"harness_id"`
+		DisplayName string `json:"display_name"`
+		Format      string `json:"format"`
+		Path        string `json:"path"`
+		Content     string `json:"content"`
+	} `json:"snippets"`
+}
+
+// VersionedToolResponse mirrors GET /api/tools/@{owner}/{slug}[/@version].
+type VersionedToolResponse struct {
+	Owner         string        `json:"owner"`
+	Slug          string        `json:"slug"`
+	LatestVersion string        `json:"latest_version"`
+	Version       string        `json:"version"`
+	Versions      []string      `json:"versions"`
+	Manifest      manifest.Tool `json:"manifest"`
+	Readme        string        `json:"readme"`
+}
+
+// GetVersionedTool fetches /api/tools/@{owner}/{slug} (latest) or /api/tools/@{owner}/{slug}/@{version}.
+func (c *Client) GetVersionedTool(owner, slug, version string) (*VersionedToolResponse, error) {
+	path := "/api/tools/" + url.PathEscape("@"+owner) + "/" + url.PathEscape(slug)
+	if version != "" {
+		path += "/" + url.PathEscape("@"+version)
+	}
+	var out VersionedToolResponse
+	if err := c.getJSON(path, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetVersionedInstall fetches /api/install/@{owner}/{slug} with optional rangeSpec (e.g. "^1.2") or /api/install/@{owner}/{slug}/@{version}.
+// Exactly one of version or rangeSpec may be non-empty; both empty means "latest".
+func (c *Client) GetVersionedInstall(owner, slug, version, rangeSpec string) (*VersionedInstallResponse, error) {
+	path := "/api/install/" + url.PathEscape("@"+owner) + "/" + url.PathEscape(slug)
+	if version != "" {
+		path += "/" + url.PathEscape("@"+version)
+	} else if rangeSpec != "" {
+		path += "?range=" + url.QueryEscape(rangeSpec)
+	}
+	var out VersionedInstallResponse
+	if err := c.getJSON(path, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *Client) getJSON(path string, out any) error {

@@ -1,8 +1,8 @@
-# Agentpop v2 Track A — Versioning + Artifacts + Lockfile Implementation Plan
+# Inguma v2 Track A — Versioning + Artifacts + Lockfile Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add semver versioning, immutable per-version artifact snapshots, a lockfile for reproducible installs, and a minimal SQLite derived-state store to Agentpop. After this track, `agentpop install @owner/slug@^1.2` works end-to-end with a lockfile and `--frozen`.
+**Goal:** Add semver versioning, immutable per-version artifact snapshots, a lockfile for reproducible installs, and a minimal SQLite derived-state store to Inguma. After this track, `inguma install @owner/slug@^1.2` works end-to-end with a lockfile and `--frozen`.
 
 **Architecture:** Git-as-database stays: tool repos are the source of truth; the crawler detects new `v<semver>` tags, produces deterministic manifest-snapshot tarballs, and writes a versioned corpus layout on disk. A SQLite file holds derived state only (downloads, audit). A new `internal/versioning` package owns semver semantics; `internal/artifacts` owns snapshot + store; `internal/lockfile` owns the lockfile TOML. API and CLI are extended with version-aware routes/commands.
 
@@ -31,7 +31,7 @@ Modified:
 - `internal/api/{server.go,tools.go,install.go,tools_test.go,install_test.go}` (version routes, artifacts route)
 - `internal/clicmd/install.go` (lockfile write + `--frozen`)
 - `cmd/apid/main.go` (wire SQLite open, artifact route)
-- `cmd/agentpop/main.go` (register new subcommands)
+- `cmd/inguma/main.go` (register new subcommands)
 - `cmd/crawler/main.go` (wire tag-diff, artifact writer)
 
 Commit boundary: one commit per task unless a task says otherwise.
@@ -47,7 +47,7 @@ Commit boundary: one commit per task unless a task says otherwise.
 
 Run:
 ```bash
-cd /Users/enekosarasola/agentpop
+cd /Users/enekosarasola/inguma
 go get golang.org/x/mod/semver@latest
 go get modernc.org/sqlite@latest
 go get github.com/BurntSushi/toml@latest
@@ -138,7 +138,7 @@ Expected: build failure (package doesn't exist yet).
 
 `internal/versioning/semver.go`:
 ```go
-// Package versioning wraps golang.org/x/mod/semver with agentpop-specific
+// Package versioning wraps golang.org/x/mod/semver with inguma-specific
 // rules: require full major.minor.patch, normalize to canonical "vX.Y.Z",
 // surface prerelease as a first-class property.
 package versioning
@@ -625,7 +625,7 @@ Run: `go test ./internal/manifest/... -run WithRegistryOwner -v`
 
 Append to `internal/manifest/validate.go`:
 ```go
-import "github.com/enekos/agentpop/internal/namespace"
+import "github.com/enekos/inguma/internal/namespace"
 
 // ValidateWithOwner performs base Validate plus namespace consistency:
 // the manifest's Name must either be a bare slug or must be @<registryOwner>/<slug>.
@@ -1292,7 +1292,7 @@ Run: `go test ./internal/corpus/... -run Version -v`
 
 Add to `internal/corpus/reader.go`:
 ```go
-import "github.com/enekos/agentpop/internal/versioning"
+import "github.com/enekos/inguma/internal/versioning"
 
 func (r *Reader) ListVersions(owner, slug string) ([]string, error) {
     dir := filepath.Join(r.root, owner, slug, "versions")
@@ -1523,7 +1523,7 @@ func TestGetArtifact(t *testing.T) {
     if rsp.Header().Get("Content-Type") != "application/gzip" {
         t.Fatalf("ct=%s", rsp.Header().Get("Content-Type"))
     }
-    if rsp.Header().Get("X-Agentpop-SHA256") == "" {
+    if rsp.Header().Get("X-Inguma-SHA256") == "" {
         t.Fatal("sha header missing")
     }
     // A second request increments download count.
@@ -1541,7 +1541,7 @@ Run: `go test ./internal/api/... -run GetArtifact -v`
 
 - [ ] **Step 3: Implement**
 
-`internal/api/artifacts.go` handler looks up the artifact via the store, streams it, sets `Content-Type: application/gzip`, `Cache-Control: public, max-age=31536000, immutable`, `X-Agentpop-SHA256: <sha>`, calls `DB.IncrementDownload(...)` with today's UTC date after the stream starts.
+`internal/api/artifacts.go` handler looks up the artifact via the store, streams it, sets `Content-Type: application/gzip`, `Cache-Control: public, max-age=31536000, immutable`, `X-Inguma-SHA256: <sha>`, calls `DB.IncrementDownload(...)` with today's UTC date after the stream starts.
 
 The server struct gains `Store artifacts.Store` and `DB *db.DB` fields wired in `cmd/apid/main.go`.
 
@@ -1644,7 +1644,7 @@ func TestRoundTrip(t *testing.T) {
 }
 
 func TestReadFromFile(t *testing.T) {
-    path := filepath.Join(t.TempDir(), "agentpop.lock")
+    path := filepath.Join(t.TempDir(), "inguma.lock")
     os.WriteFile(path, []byte("schema = 1\n\n[[packages]]\nslug = \"@foo/bar\"\nversion = \"v1.0.0\"\nsha256 = \"x\"\nsource_repo = \"r\"\nsource_ref = \"refs/tags/v1.0.0\"\ninstalled_at = \"t\"\nkind = \"mcp\"\n"), 0o644)
     l, err := ReadFile(path)
     if err != nil {
@@ -1765,12 +1765,12 @@ Run: `go test ./internal/lockfile/... -v`
 
 ```bash
 git add internal/lockfile/
-git commit -m "feat(lockfile): read/write agentpop.lock with CheckFrozen"
+git commit -m "feat(lockfile): read/write inguma.lock with CheckFrozen"
 ```
 
 ---
 
-## Task 17: CLI `agentpop install @x/y@range` with lockfile write
+## Task 17: CLI `inguma install @x/y@range` with lockfile write
 
 **Files:**
 - Modify: `internal/clicmd/install.go`, `internal/clicmd/install_test.go`, `internal/apiclient/` (add versioned fetch)
@@ -1785,7 +1785,7 @@ Locate the spot where the install flow resolves a manifest from the API.
 
 Add `internal/clicmd/install_test.go::TestInstallWritesLockfile`:
 
-Set up a fake apiclient that returns `resolved_version=v1.2.3` + sha for `@foo/bar`. Run `install @foo/bar` with a temp workdir. Assert `agentpop.lock` is created and contains the entry.
+Set up a fake apiclient that returns `resolved_version=v1.2.3` + sha for `@foo/bar`. Run `install @foo/bar` with a temp workdir. Assert `inguma.lock` is created and contains the entry.
 
 - [ ] **Step 3: Fail**
 
@@ -1797,7 +1797,7 @@ In `install` run flow:
 1. Parse argument with `namespace.Parse` + optional `@<range>` suffix.
 2. Call `apiclient.GetInstall(name, rangeSpec)` which hits `/api/install/@owner/slug[?range=...]`.
 3. Use the returned manifest + sha to run adapter install.
-4. After successful adapter install, read lockfile at `./agentpop.lock` (create if absent), `Upsert` the entry, `WriteFile`.
+4. After successful adapter install, read lockfile at `./inguma.lock` (create if absent), `Upsert` the entry, `WriteFile`.
 
 - [ ] **Step 5: Pass**
 
@@ -1807,12 +1807,12 @@ Run: `go test ./internal/clicmd/... -v`
 
 ```bash
 git add internal/clicmd/ internal/apiclient/
-git commit -m "feat(cli): install resolves range and writes agentpop.lock"
+git commit -m "feat(cli): install resolves range and writes inguma.lock"
 ```
 
 ---
 
-## Task 18: CLI `agentpop install --frozen`
+## Task 18: CLI `inguma install --frozen`
 
 **Files:**
 - Modify: `internal/clicmd/install.go`, `internal/clicmd/install_test.go`
@@ -1846,14 +1846,14 @@ git commit -m "feat(cli): install --frozen enforces lockfile exactly"
 
 ---
 
-## Task 19: CLI `agentpop upgrade`
+## Task 19: CLI `inguma upgrade`
 
 **Files:**
 - Create: `internal/clicmd/upgrade.go`, `internal/clicmd/upgrade_test.go`
 
 - [ ] **Step 1: Test**
 
-`TestUpgradeBumpsVersionInLockfile`: lockfile pins `@foo/bar@v1.0.0`; API says latest is `v1.1.0`; `agentpop upgrade @foo/bar` updates the lockfile entry and reinstalls.
+`TestUpgradeBumpsVersionInLockfile`: lockfile pins `@foo/bar@v1.0.0`; API says latest is `v1.1.0`; `inguma upgrade @foo/bar` updates the lockfile entry and reinstalls.
 
 `TestUpgradeAllNoArgs`: upgrades every entry in the lockfile.
 
@@ -1870,20 +1870,20 @@ Run: `go test ./internal/clicmd/... -run Upgrade -v`
 
 - [ ] **Step 4: Pass + register command**
 
-Register in `cmd/agentpop/main.go`.
+Register in `cmd/inguma/main.go`.
 
 Run: `go test ./internal/clicmd/... -v && make build`
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add internal/clicmd/ cmd/agentpop/
-git commit -m "feat(cli): agentpop upgrade for lockfile-driven updates"
+git add internal/clicmd/ cmd/inguma/
+git commit -m "feat(cli): inguma upgrade for lockfile-driven updates"
 ```
 
 ---
 
-## Task 20: CLI `agentpop publish` (tag + push + poll)
+## Task 20: CLI `inguma publish` (tag + push + poll)
 
 **Files:**
 - Create: `internal/clicmd/publish.go`, `internal/clicmd/publish_test.go`
@@ -1891,8 +1891,8 @@ git commit -m "feat(cli): agentpop upgrade for lockfile-driven updates"
 - [ ] **Step 1: Test**
 
 Fake git runner + fake apiclient. `TestPublishTagsPushesAndPolls`:
-1. cwd contains `agentpop.yaml` with `version: 1.2.3`.
-2. `agentpop publish` runs `git tag v1.2.3`, `git push origin v1.2.3`, then polls `GET /api/tools/@owner/slug/@v1.2.3` until 200.
+1. cwd contains `inguma.yaml` with `version: 1.2.3`.
+2. `inguma publish` runs `git tag v1.2.3`, `git push origin v1.2.3`, then polls `GET /api/tools/@owner/slug/@v1.2.3` until 200.
 3. Refuses to publish if the tag already exists locally or the working tree is dirty.
 
 - [ ] **Step 2: Fail**
@@ -1909,13 +1909,13 @@ The manifest must carry a new optional `version:` top-level field; add it to `in
 
 Run: `go test ./internal/clicmd/... -v && make build`
 
-Register in `cmd/agentpop/main.go`.
+Register in `cmd/inguma/main.go`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add internal/clicmd/ cmd/agentpop/ internal/manifest/
-git commit -m "feat(cli): agentpop publish tags, pushes, and polls ingestion"
+git add internal/clicmd/ cmd/inguma/ internal/manifest/
+git commit -m "feat(cli): inguma publish tags, pushes, and polls ingestion"
 ```
 
 ---
@@ -1962,7 +1962,7 @@ git commit -m "feat(api): 301 redirect legacy bare-slug routes to @owner/slug"
 - [ ] **Step 1: Test**
 
 `TestSyntheticVersionForUntaggedRepo`:
-- Fake fetcher returns zero tags but a valid `agentpop.yaml` on `main`.
+- Fake fetcher returns zero tags but a valid `inguma.yaml` on `main`.
 - After crawl, `corpus/foo/bar/versions/v0.0.0/manifest.json` exists.
 - Latest version is `v0.0.0`.
 - Re-crawling is a no-op unless the HEAD commit changes (the synthetic version carries the commit SHA in its `manifest.json` under a new `.synthetic_ref` field; if the commit changes, the synthetic entry is *replaced in place* — this is the one exception to immutability).
@@ -2002,8 +2002,8 @@ git commit -m "feat(crawler): synthetic v0.0.0 for untagged tool repos"
 - [ ] **Step 1: apid**
 
 `cmd/apid/main.go` additions:
-- Flag `-sqlite /var/lib/agentpop/agentpop.sqlite` (defaults to `./agentpop.sqlite`).
-- Flag `-artifacts /var/lib/agentpop/artifacts` (defaults to `./artifacts`).
+- Flag `-sqlite /var/lib/inguma/inguma.sqlite` (defaults to `./inguma.sqlite`).
+- Flag `-artifacts /var/lib/inguma/artifacts` (defaults to `./artifacts`).
 - Open `db.Open(flag)`, create `artifacts.NewFSStore(flag)`, inject into `api.Server`.
 - Wire graceful shutdown: `db.Close()`.
 
@@ -2063,15 +2063,15 @@ sleep 1
 
 # 4. Install latest
 cd "$TMP"
-AGENTPOP_API=http://localhost:18091 bin/agentpop install @foo/bar
-grep -q '"@foo/bar"' agentpop.lock
-grep -q '"v1.1.0"' agentpop.lock
+INGUMA_API=http://localhost:18091 bin/inguma install @foo/bar
+grep -q '"@foo/bar"' inguma.lock
+grep -q '"v1.1.0"' inguma.lock
 
 # 5. --frozen at matching version succeeds
-AGENTPOP_API=http://localhost:18091 bin/agentpop install @foo/bar --frozen
+INGUMA_API=http://localhost:18091 bin/inguma install @foo/bar --frozen
 
 # 6. Upgrade no-op (already latest)
-AGENTPOP_API=http://localhost:18091 bin/agentpop upgrade @foo/bar | grep -q "up to date"
+INGUMA_API=http://localhost:18091 bin/inguma upgrade @foo/bar | grep -q "up to date"
 
 echo "TRACK-A-OK"
 ```
@@ -2103,7 +2103,7 @@ git commit -m "test(e2e): track-a smoke covers install, frozen, upgrade"
 - [ ] **Step 1: Write**
 
 Short docs (1–2 screens each):
-- `docs/publishing.md` — "Submit once via PR to `registry/tools.yaml`; all future versions = `agentpop publish` or `git tag vX.Y.Z && git push`." Include the minimum valid `agentpop.yaml` with `name: @owner/slug` and `version: 1.0.0`.
+- `docs/publishing.md` — "Submit once via PR to `registry/tools.yaml`; all future versions = `inguma publish` or `git tag vX.Y.Z && git push`." Include the minimum valid `inguma.yaml` with `name: @owner/slug` and `version: 1.0.0`.
 - `docs/lockfile.md` — lockfile shape, when it's written, how `--frozen` and `upgrade` interact.
 
 - [ ] **Step 2: Commit**
@@ -2136,7 +2136,7 @@ Placeholder scan: no "TBD"/"implement later". Code blocks appear in every code s
 
 Gaps intentionally deferred to other tracks:
 - Sigstore verification (Track C).
-- `advisories` table population and `agentpop audit` command (Track C).
-- Accounts, sessions, `agentpop login`/`whoami` (Track B).
+- `advisories` table population and `inguma audit` command (Track C).
+- Accounts, sessions, `inguma login`/`whoami` (Track B).
 - `yank`/`deprecate` commands (Track B + C).
 - New package kinds `skill`/`subagent`/`command`/`bundle` (Track D).

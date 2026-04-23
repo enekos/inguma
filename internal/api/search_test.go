@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 type stubMarrow struct {

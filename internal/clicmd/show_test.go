@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 func TestShow(t *testing.T) {
@@ -23,7 +23,7 @@ func TestShow(t *testing.T) {
 	mux.HandleFunc("/api/install/", func(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"slug": "tool-a",
-			"cli":  map[string]any{"command": "agentpop install tool-a"},
+			"cli":  map[string]any{"command": "inguma install tool-a"},
 			"snippets": []map[string]any{
 				{"harness_id": "claude-code", "display_name": "Claude Code", "format": "json", "content": "{}"},
 			},
@@ -38,7 +38,7 @@ func TestShow(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := out.String()
-	if !strings.Contains(s, "Tool A") || !strings.Contains(s, "agentpop install tool-a") || !strings.Contains(s, "Claude Code") {
+	if !strings.Contains(s, "Tool A") || !strings.Contains(s, "inguma install tool-a") || !strings.Contains(s, "Claude Code") {
 		t.Errorf("out = %q", s)
 	}
 }

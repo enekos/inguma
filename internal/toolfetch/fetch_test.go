@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func TestPickSource_prefersFirstAvailable(t *testing.T) {

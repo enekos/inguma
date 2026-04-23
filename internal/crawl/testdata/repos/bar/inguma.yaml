@@ -1,0 +1,13 @@
+name: bar
+display_name: Bar Tool
+description: Fixture tool bar for versioned crawl tests.
+readme: README.md
+license: MIT
+kind: mcp
+mcp:
+  transport: stdio
+  command: echo
+  args: ["hello-bar"]
+compatibility:
+  harnesses: [claude-code]
+  platforms: [darwin, linux]

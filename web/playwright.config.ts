@@ -10,7 +10,7 @@ export default defineConfig({
 		command: 'npm run dev -- --port 5173',
 		port: 5173,
 		reuseExistingServer: !process.env.CI,
-		env: { AGENTPOP_API_URL: process.env.AGENTPOP_API_URL ?? 'http://localhost:8091' }
+		env: { INGUMA_API_URL: process.env.INGUMA_API_URL ?? 'http://localhost:8091' }
 	},
 	projects: [{ name: 'chromium', use: { browserName: 'chromium' } }]
 });

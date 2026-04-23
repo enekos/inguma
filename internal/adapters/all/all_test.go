@@ -3,7 +3,7 @@ package all_test
 import (
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
+	"github.com/enekos/inguma/internal/adapters/all"
 )
 
 func TestDefault(t *testing.T) {

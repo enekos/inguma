@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/adapters/all"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 // fakeMarrow is a no-op Marrow client used in unit tests that don't hit search.

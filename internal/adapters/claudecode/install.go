@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // Install adds the tool to ~/.claude.json's mcpServers map atomically.

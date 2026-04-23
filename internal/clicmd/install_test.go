@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // fakeAdapter is a minimal harness adapter we can wire into a Registry.

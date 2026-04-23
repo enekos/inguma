@@ -12,7 +12,7 @@ function baseURL(): string {
 	// In production the frontend is proxied by Caddy so /api/* is same-origin.
 	// In dev we fall back to localhost:8091 (where `bin/apid` runs).
 	if (typeof window !== 'undefined') return '';
-	return env.AGENTPOP_API_URL ?? DEFAULT_BASE;
+	return env.INGUMA_API_URL ?? DEFAULT_BASE;
 }
 
 async function getJSON<T>(fetchFn: Fetch, path: string): Promise<T> {

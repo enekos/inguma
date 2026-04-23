@@ -1,6 +1,6 @@
-# Agentpop Web
+# Inguma Web
 
-SvelteKit frontend for the Agentpop marketplace.
+SvelteKit frontend for the Inguma marketplace.
 
 ## Prerequisites
 

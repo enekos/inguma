@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func TestReadTool(t *testing.T) {

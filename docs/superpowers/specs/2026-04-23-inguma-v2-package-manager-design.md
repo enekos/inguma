@@ -1,12 +1,12 @@
-# Agentpop v2 — Package Manager for AI Agents (Design)
+# Inguma v2 — Package Manager for AI Agents (Design)
 
 Date: 2026-04-23
 Status: Approved design, ready for implementation plan
-Builds on: `2026-04-22-agentpop-marketplace-design.md` (v1)
+Builds on: `2026-04-22-inguma-marketplace-design.md` (v1)
 
 ## Summary
 
-Agentpop v1 is a curated marketplace with a CLI installer. v2 turns it into a real package manager for AI agents: versioned immutable artifacts, lockfiles, GitHub-backed accounts and namespaces, a declarative permissions model with sigstore signing and security advisories, and agent-native package kinds (skills, subagents, slash commands, bundles) alongside the existing `mcp` and `cli`.
+Inguma v1 is a curated marketplace with a CLI installer. v2 turns it into a real package manager for AI agents: versioned immutable artifacts, lockfiles, GitHub-backed accounts and namespaces, a declarative permissions model with sigstore signing and security advisories, and agent-native package kinds (skills, subagents, slash commands, bundles) alongside the existing `mcp` and `cli`.
 
 Storage model stays **git-as-database**: every tool's own GitHub repo remains the source of truth. A minimal SQLite file holds derived/ephemeral data only (downloads, audit, advisories, sessions). A full rebuild from source repos is always possible.
 
@@ -50,11 +50,11 @@ Resolution rules:
 On detecting a new `v<semver>` tag, the crawler:
 
 1. Fetches the repo at that tag.
-2. Parses `agentpop.yaml`; reads declared `readme:`, license, kind-specific files.
+2. Parses `inguma.yaml`; reads declared `readme:`, license, kind-specific files.
 3. Produces a **manifest snapshot tarball** `@owner-slug-version.tgz` containing: normalized `manifest.json`, `README.md`, license, and kind-specific payload (skill files, subagent files, etc. — see track D). For `mcp`/`cli` tools we do NOT re-host the upstream npm/go/binary; we snapshot the manifest and record the resolved upstream coordinates + checksums declared in the manifest.
 4. Writes the tarball and its sha256 to the artifact store. Re-tagging an existing version is rejected at ingest.
 
-Artifact store in v2.0 is the local filesystem under `/var/lib/agentpop/artifacts/<owner>/<slug>/<version>.tgz`, served over HTTP with strong caching. Object storage is a drop-in swap later.
+Artifact store in v2.0 is the local filesystem under `/var/lib/inguma/artifacts/<owner>/<slug>/<version>.tgz`, served over HTTP with strong caching. Object storage is a drop-in swap later.
 
 ### Corpus layout (versioned)
 
@@ -74,7 +74,7 @@ All prior versions are retained forever. Yanked versions stay resolvable but car
 
 ### Lockfile
 
-`agentpop.lock` (TOML) sits next to each install target (one per harness config dir, plus one for project-local installs in the cwd):
+`inguma.lock` (TOML) sits next to each install target (one per harness config dir, plus one for project-local installs in the cwd):
 
 ```toml
 schema = 1
@@ -89,13 +89,13 @@ installed_at = "2026-04-23T10:11:12Z"
 kind = "mcp"
 ```
 
-- `agentpop install --frozen` refuses to resolve anything not in the lockfile.
-- `agentpop upgrade` is the only command that mutates the lockfile.
+- `inguma install --frozen` refuses to resolve anything not in the lockfile.
+- `inguma upgrade` is the only command that mutates the lockfile.
 - CI should always run `--frozen`.
 
 ### Minimal DB
 
-SQLite file `/var/lib/agentpop/agentpop.sqlite`:
+SQLite file `/var/lib/inguma/inguma.sqlite`:
 
 - `downloads(slug, version, day, count)` — bumped by the api server per `/api/install/:slug` fetch.
 - `audit(ts, actor, action, slug, version, meta_json)` — every admin action.
@@ -116,9 +116,9 @@ Nothing here is load-bearing for install correctness. Dropping the file still le
 
 ### CLI additions (track A)
 
-- `agentpop install @x/y[@range]` with lockfile write.
-- `agentpop install --frozen`, `agentpop upgrade [slug]`, `agentpop list --outdated`.
-- `agentpop publish` — convenience wrapper that reads the local `agentpop.yaml`, tags `v<version>`, pushes the tag, and polls the crawler for ingestion confirmation. Does not upload bytes.
+- `inguma install @x/y[@range]` with lockfile write.
+- `inguma install --frozen`, `inguma upgrade [slug]`, `inguma list --outdated`.
+- `inguma publish` — convenience wrapper that reads the local `inguma.yaml`, tags `v<version>`, pushes the tag, and polls the crawler for ingestion confirmation. Does not upload bytes.
 
 ## Track B — Accounts and namespaces
 
@@ -127,20 +127,20 @@ Nothing here is load-bearing for install correctness. Dropping the file still le
 GitHub OAuth only. OAuth scopes: `read:user`, `read:org`. We never request write access and never push on the user's behalf.
 
 - Web session = HTTP-only cookie holding an opaque token; `sessions` row maps token → `gh_user`, scopes, expires_at.
-- CLI auth via GitHub device flow: `agentpop login` → open URL, poll `/api/auth/device`, store token in `~/.agentpop/token` (mode 0600).
-- `agentpop whoami`, `agentpop logout`.
+- CLI auth via GitHub device flow: `inguma login` → open URL, poll `/api/auth/device`, store token in `~/.inguma/token` (mode 0600).
+- `inguma whoami`, `inguma logout`.
 
 ### Namespaces
 
 - `@<gh-login>/<slug>` for personal accounts, `@<gh-org>/<slug>` for orgs.
-- Ownership is derived from the GitHub repo in `registry/tools.yaml`; the tool's `agentpop.yaml` `name:` must match the slug and the owner-prefix must match the repo owner. Mismatch = manifest validation error, crawler skips and reports.
+- Ownership is derived from the GitHub repo in `registry/tools.yaml`; the tool's `inguma.yaml` `name:` must match the slug and the owner-prefix must match the repo owner. Mismatch = manifest validation error, crawler skips and reports.
 - Ownership transfer = transfer the GitHub repo. The next crawl picks up the new owner; old `@olduser/slug` redirects to `@newuser/slug` on the site for 90 days (redirect table in SQLite, created by the crawler on owner change).
 
 ### Publishing flow
 
-1. **First submission:** PR to `registry/tools.yaml` adding `{repo, owner, slug}`. Maintainer merges after verifying the repo has a valid `agentpop.yaml`.
+1. **First submission:** PR to `registry/tools.yaml` adding `{repo, owner, slug}`. Maintainer merges after verifying the repo has a valid `inguma.yaml`.
 2. **All subsequent versions:** push a `v<semver>` tag. Crawler picks it up within the hour (also triggerable via a signed webhook from GitHub Releases for faster turnaround — see Ops).
-3. **`agentpop publish`** is a thin wrapper: tag, push, poll for ingestion.
+3. **`inguma publish`** is a thin wrapper: tag, push, poll for ingestion.
 
 ### Session scopes
 
@@ -150,8 +150,8 @@ GitHub OAuth only. OAuth scopes: `read:user`, `read:org`. We never request write
 
 ### Author-facing actions
 
-- `agentpop yank @x/y@1.2.3` — marks version yanked. Install still resolves it but prints a warning.
-- `agentpop deprecate @x/y --message "…"` — whole-package deprecation notice shown on page and at install time.
+- `inguma yank @x/y@1.2.3` — marks version yanked. Install still resolves it but prints a warning.
+- `inguma deprecate @x/y --message "…"` — whole-package deprecation notice shown on page and at install time.
 - Web "My tools" dashboard at `/u/@<login>` for the signed-in user: owned tools, per-version download counts, active advisories. Dashboard is read-only — authoring changes go through git + tags.
 
 ### Publisher profile pages
@@ -166,7 +166,7 @@ Lives in SQLite (`audit` + a `package_state` table keyed by `slug`+`version`). R
 
 ### Permissions manifest
 
-New top-level block in `agentpop.yaml`. All fields default to `none`; omitting the block means the tool is surfaced as "unverified — no permissions declared".
+New top-level block in `inguma.yaml`. All fields default to `none`; omitting the block means the tool is surfaced as "unverified — no permissions declared".
 
 ```yaml
 permissions:
@@ -189,7 +189,7 @@ permissions:
 ### Install-time consent (CLI)
 
 ```
-$ agentpop install @foo/bar
+$ inguma install @foo/bar
 @foo/bar@1.2.3 by @foo  [signed ✓]  [87 downloads last week]
 
 This tool will:
@@ -204,7 +204,7 @@ Proceed? [y/N/diff]
 ```
 
 - `diff` prints the exact harness-config diff.
-- `--yes` skips the prompt but only when `agentpop.lock` pins the version (no blind-approval of floating ranges).
+- `--yes` skips the prompt but only when `inguma.lock` pins the version (no blind-approval of floating ranges).
 - `--require-signed` refuses unsigned packages. Default off in v2; default on in v3.
 
 ### Signing and provenance
@@ -212,13 +212,13 @@ Proceed? [y/N/diff]
 - Signing via **sigstore cosign (keyless)** driven by GitHub Actions OIDC. Authors add a ~15-line workflow (template we publish) that signs the tarball on tag push.
 - The crawler verifies: the artifact was signed by a workflow in the same repo that owns the tag. Pass → "signed ✓ built from `github.com/foo/bar` @ `<commit>`". Fail or absent → "unsigned".
 - No private keys, no key rotation. Trust roots in GitHub, which we already rely on for identity.
-- `agentpop install` fails closed on signature *mismatch*; warns on *absent*. Promotion to fail-closed on absence requires `--require-signed` or a future default flip.
+- `inguma install` fails closed on signature *mismatch*; warns on *absent*. Promotion to fail-closed on absence requires `--require-signed` or a future default flip.
 
 ### Advisories and audit
 
 - `advisories` table populated by admin CLI:
-  `agentpop advisory publish --slug @x/y --range "<1.2.4" --severity high --summary "…" --refs "CVE-…,https://…"`
-- `agentpop audit` (new command, mirrors `npm audit`) reads the lockfile, queries `/api/advisories`, groups hits by severity, exits nonzero on `high` and above.
+  `inguma advisory publish --slug @x/y --range "<1.2.4" --severity high --summary "…" --refs "CVE-…,https://…"`
+- `inguma audit` (new command, mirrors `npm audit`) reads the lockfile, queries `/api/advisories`, groups hits by severity, exits nonzero on `high` and above.
 - Website renders an advisory banner on affected versions and aggregates into a site-wide advisories feed (`/advisories`, Atom/RSS).
 - Takedown: admin marks a version `withdrawn`. Unlike yank (warns), withdrawn versions are not served via `/api/artifacts` and the CLI refuses to install them. Every admin mutation writes an `audit` row.
 
@@ -305,7 +305,7 @@ Rules:
 
 ### Permissions across kinds
 
-- A subagent's `tools:` list and the agentpop `permissions.exec.spawn` / `filesystem` fields are cross-checked; the stricter wins at the display step. Consumers see both.
+- A subagent's `tools:` list and the inguma `permissions.exec.spawn` / `filesystem` fields are cross-checked; the stricter wins at the display step. Consumers see both.
 - A skill that reads arbitrary filesystem paths must declare it in `permissions.filesystem`.
 
 ### Corpus and search
@@ -337,14 +337,14 @@ registry repo ──PR──▶ crawler ──▶ corpus/ (versioned) ──▶ 
                          │
                          ├─▶ SQLite (downloads, audit, advisories, sessions, state)
                          ▼
-                       apid (HTTP) ──▶ web (SvelteKit)  +  agentpop CLI
+                       apid (HTTP) ──▶ web (SvelteKit)  +  inguma CLI
                           │
                           └── GitHub OAuth (sessions, device flow)
 ```
 
 Crawler gains: tag-diff detection per tool repo, sigstore verification, artifact tarball writer, advisories table reader for page render, redirect-table maintenance on owner change.
 
-apid gains: routes under `/api/tools/@owner/slug`, `/api/artifacts/…`, `/api/auth/{github,device,session}`, `/api/advisories`, `/api/audit`, `/api/me` (session). SSE or a polling endpoint for "is my tag ingested yet" used by `agentpop publish`.
+apid gains: routes under `/api/tools/@owner/slug`, `/api/artifacts/…`, `/api/auth/{github,device,session}`, `/api/advisories`, `/api/audit`, `/api/me` (session). SSE or a polling endpoint for "is my tag ingested yet" used by `inguma publish`.
 
 CLI gains: lockfile, `install --frozen`, `upgrade`, `login`/`logout`/`whoami`, `publish`, `yank`, `deprecate`, `audit`, `--require-signed`, per-kind installers.
 
@@ -360,7 +360,7 @@ CLI gains: lockfile, `install --frozen`, `upgrade`, `login`/`logout`/`whoami`, `
 ```
 internal/
   versioning/           # semver parse, range matching, tag scan
-  lockfile/             # parse/write/diff agentpop.lock
+  lockfile/             # parse/write/diff inguma.lock
   artifacts/            # snapshot tarball builder, sha256, store interface
   auth/                 # GitHub OAuth, device flow, sessions
   namespace/            # @owner/slug canonicalization and resolution
@@ -368,7 +368,7 @@ internal/
   sigstore/             # cosign verification wrapper
   advisories/           # query + render
 cmd/
-  agentpop/             # gains: login/logout/whoami, publish, yank, deprecate, audit, upgrade, --frozen
+  inguma/             # gains: login/logout/whoami, publish, yank, deprecate, audit, upgrade, --frozen
   apid/                 # new routes above
   crawler/              # tag-diff, sigstore verify, artifact writer
 migrations/             # sqlite schema migrations (new dir)
@@ -389,9 +389,9 @@ migrations/             # sqlite schema migrations (new dir)
 
 ## Ops
 
-- SQLite under `/var/lib/agentpop/agentpop.sqlite`; hourly `sqlite3 .backup` to a second file + nightly rsync to object storage.
-- Artifacts under `/var/lib/agentpop/artifacts/` with Caddy serving them directly; cache headers `immutable, max-age=31536000`.
-- New systemd unit `agentpop-webhook.service` for GitHub release webhooks (HMAC-verified) to trigger targeted crawls.
+- SQLite under `/var/lib/inguma/inguma.sqlite`; hourly `sqlite3 .backup` to a second file + nightly rsync to object storage.
+- Artifacts under `/var/lib/inguma/artifacts/` with Caddy serving them directly; cache headers `immutable, max-age=31536000`.
+- New systemd unit `inguma-webhook.service` for GitHub release webhooks (HMAC-verified) to trigger targeted crawls.
 - Metrics endpoint exposes: crawl failures, sigstore verify failures, advisory count, daily download totals.
 
 ## Sequencing and merge strategy

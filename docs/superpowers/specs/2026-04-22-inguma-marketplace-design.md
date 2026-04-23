@@ -1,11 +1,11 @@
-# Agentpop — Marketplace for Agentic Tools (v1 Design)
+# Inguma — Marketplace for Agentic Tools (v1 Design)
 
 Date: 2026-04-22
 Status: Approved design, ready for implementation plan
 
 ## Summary
 
-Agentpop is a marketplace for agentic tools (MCP servers and CLI tools) compatible with multiple agent harnesses. Users browse/search a curated catalog on a website and install tools into their local harness(es) with `agentpop install <slug>`. Copy-paste configuration snippets are always shown as a fallback on every tool page.
+Inguma is a marketplace for agentic tools (MCP servers and CLI tools) compatible with multiple agent harnesses. Users browse/search a curated catalog on a website and install tools into their local harness(es) with `inguma install <slug>`. Copy-paste configuration snippets are always shown as a fallback on every tool page.
 
 The backend is Go, the frontend is SvelteKit, and search is powered by [Marrow](https://github.com/enekos/marrow) (local-first hybrid FTS5 + vector search over Markdown).
 
@@ -14,7 +14,7 @@ v1 ships with adapters for **Claude Code** and **Cursor**, with a pluggable adap
 ## Goals
 
 - A public marketplace site where users can discover MCP servers and CLI tools.
-- One-command install into detected harnesses via an `agentpop` CLI.
+- One-command install into detected harnesses via an `inguma` CLI.
 - Copy-paste configuration snippets on every tool page, always visible, as a fallback to the CLI.
 - A curated registry model: tool authors own their manifest in their own repo; marketplace curates via PRs to a registry repo.
 - A pluggable harness adapter interface.
@@ -32,9 +32,9 @@ v1 ships with adapters for **Claude Code** and **Cursor**, with a pluggable adap
 
 ## Key decisions (from brainstorming)
 
-1. **Install model:** CLI-first (`agentpop install <slug>`) with copy-paste snippets always visible as a fallback.
+1. **Install model:** CLI-first (`inguma install <slug>`) with copy-paste snippets always visible as a fallback.
 2. **Harness coverage:** ship with Claude Code + Cursor; expose a pluggable adapter interface.
-3. **Publishing model:** curated registry repo of tool repo URLs; each tool owns its `agentpop.yaml`; crawler produces the corpus; no user-writable marketplace state.
+3. **Publishing model:** curated registry repo of tool repo URLs; each tool owns its `inguma.yaml`; crawler produces the corpus; no user-writable marketplace state.
 4. **Tool kinds:** `mcp` and `cli` only. CLI tools may declare multiple install sources (npm / go / binary); the CLI picks the first one supported on the user's system.
 5. **Discovery UX:** split home — prominent search bar *and* category grid + featured/recently-added rows.
 
@@ -46,7 +46,7 @@ Four components, all reading a shared on-disk corpus. No user-writable state.
 ┌──────────────────┐      PR merge       ┌─────────────────────┐
 │ registry repo    │────────────────────▶│  crawler (Go)       │
 │ (tool URLs list) │                     │  • clones tool repos│
-└──────────────────┘                     │  • reads agentpop.  │
+└──────────────────┘                     │  • reads inguma.  │
                                          │    yaml + README    │
                                          │  • writes manifest  │
                                          │    JSON + markdown  │
@@ -70,7 +70,7 @@ Four components, all reading a shared on-disk corpus. No user-writable state.
 └──────────────────┘           └─────────────────────┘
 
 ┌──────────────────┐
-│ agentpop CLI (Go)│  reads /api/install/:slug, applies via adapters
+│ inguma CLI (Go)│  reads /api/install/:slug, applies via adapters
 └──────────────────┘
 ```
 
@@ -85,14 +85,14 @@ Four components, all reading a shared on-disk corpus. No user-writable state.
 One Go module, one Svelte app.
 
 ```
-agentpop/
+inguma/
 ├── go.mod
 ├── cmd/
-│   ├── agentpop/         # user-facing CLI (install, list, search)
+│   ├── inguma/         # user-facing CLI (install, list, search)
 │   ├── crawler/          # fetches tool repos, writes corpus/
 │   └── apid/             # marketplace HTTP API server
 ├── internal/
-│   ├── manifest/         # agentpop.yaml parse + validate (shared)
+│   ├── manifest/         # inguma.yaml parse + validate (shared)
 │   ├── registry/         # reads curated registry repo (list of tool URLs)
 │   ├── corpus/           # on-disk layout: corpus/<slug>/{manifest.json,index.md}
 │   ├── adapters/         # harness adapters
@@ -116,7 +116,7 @@ agentpop/
 └── Makefile
 ```
 
-## Tool manifest schema (`agentpop.yaml`)
+## Tool manifest schema (`inguma.yaml`)
 
 Lives at the root of each tool's own repository.
 
@@ -158,7 +158,7 @@ Validation is strict: unknown top-level keys are errors, not warnings, so schema
 
 ## Adapter interface
 
-The single pluggable abstraction. Powers both the website's per-harness install tabs and `agentpop install`.
+The single pluggable abstraction. Powers both the website's per-harness install tabs and `inguma install`.
 
 ```go
 // internal/adapters/adapter.go
@@ -190,7 +190,7 @@ v1 ships two implementations: `claudecode` and `cursor`.
 **Crawl cycle** (on-demand and on an hourly schedule):
 
 1. Read `registry/tools.yaml` — list of `{repo, ref}` entries.
-2. For each entry: shallow-clone at `ref`, read `agentpop.yaml`, resolve `readme:`, validate manifest.
+2. For each entry: shallow-clone at `ref`, read `inguma.yaml`, resolve `readme:`, validate manifest.
 3. Write to `corpus/<slug>/`:
    - `manifest.json` — normalized, canonical form. Used by the api server.
    - `index.md` — README body with YAML frontmatter (`slug`, `name`, `description`, `kind`, `categories`, `tags`, `harnesses`, `platforms`, `lang`). This is what Marrow indexes.
@@ -229,7 +229,7 @@ SSR enabled so tool pages are crawlable and fast on cold hits. Tailwind for styl
 ├─────────────────────────────────────────────────┤
 │  ▶ Install                                      │
 │  ┌ Tabs: [Claude Code] [Cursor] [CLI one-liner]┐│
-│  │  $ agentpop install my-tool                 ││
+│  │  $ inguma install my-tool                 ││
 │  │  Or paste into ~/.claude.json: …            ││
 │  │  Required env: API_KEY (description)        ││
 │  └─────────────────────────────────────────────┘│
@@ -242,22 +242,22 @@ SSR enabled so tool pages are crawlable and fast on cold hits. Tailwind for styl
 └─────────────────────────────────────────────────┘
 ```
 
-The install tabs are rendered from `/api/install/:slug` — one tab per adapter plus a generic "CLI one-liner" tab that always shows `agentpop install <slug>`.
+The install tabs are rendered from `/api/install/:slug` — one tab per adapter plus a generic "CLI one-liner" tab that always shows `inguma install <slug>`.
 
-## CLI (`agentpop`)
+## CLI (`inguma`)
 
 Built on the same `internal/manifest` + `internal/adapters` packages as the api server.
 
 **Commands:**
 
 ```
-agentpop install <slug> [--harness claude-code,cursor] [--dry-run]
-agentpop uninstall <slug> [--harness ...]
-agentpop list                           # tools installed locally (per harness)
-agentpop search <query> [--kind mcp]    # hits /api/search
-agentpop show <slug>                    # prints manifest + snippets
-agentpop doctor                         # detects installed harnesses, prints status
-agentpop update                         # updates the CLI itself
+inguma install <slug> [--harness claude-code,cursor] [--dry-run]
+inguma uninstall <slug> [--harness ...]
+inguma list                           # tools installed locally (per harness)
+inguma search <query> [--kind mcp]    # hits /api/search
+inguma show <slug>                    # prints manifest + snippets
+inguma doctor                         # detects installed harnesses, prints status
+inguma update                         # updates the CLI itself
 ```
 
 **Install flow:**
@@ -266,8 +266,8 @@ agentpop update                         # updates the CLI itself
 2. Run `Detect()` on every registered adapter. If `--harness` was given, filter to that set; otherwise target every detected harness (after a confirm prompt listing them).
 3. For each target adapter:
    - If `kind: cli`, pick the first supported install source (`npm`, `go`, `binary`) based on what is on PATH. For `binary`, verify the checksum declared in the manifest.
-   - Call `adapter.Install(manifest, opts)`. Adapter writes the harness config atomically (read → modify → write to temp → rename), backing up the previous config to `~/.agentpop/backups/`.
-4. Record the install in `~/.agentpop/state.json` — `{slug, version, harness, installed_at, source}` — so `list` and `uninstall` work without re-reading harness configs.
+   - Call `adapter.Install(manifest, opts)`. Adapter writes the harness config atomically (read → modify → write to temp → rename), backing up the previous config to `~/.inguma/backups/`.
+4. Record the install in `~/.inguma/state.json` — `{slug, version, harness, installed_at, source}` — so `list` and `uninstall` work without re-reading harness configs.
 
 **Reversibility:** every adapter `Install` returns a rollback closure the caller runs on failure. `--dry-run` prints the exact diff that would be applied.
 
@@ -293,12 +293,12 @@ agentpop update                         # updates the CLI itself
 ## Ops
 
 - Single VPS box, Caddy in front (mirrors the existing Marrow deploy).
-- `systemd` units: `agentpop-apid.service`, `agentpop-crawler.timer` (hourly), `marrow.service` (already exists).
-- All state on disk under `/var/lib/agentpop/{corpus,backups}`.
+- `systemd` units: `inguma-apid.service`, `inguma-crawler.timer` (hourly), `marrow.service` (already exists).
+- All state on disk under `/var/lib/inguma/{corpus,backups}`.
 - Nightly rsync of `corpus/` to object storage is enough backup — everything is rebuildable from the registry repo.
 
 ## Open questions / deferred
 
 - Exact controlled-vocabulary list for `categories`. Start with a short list (~15) in `docs/` and expand via PR.
 - Where the registry repo lives — same repo under `registry/tools.yaml` for v1; split into its own repo once external contributors start submitting.
-- Whether to publish a JSON Schema file for `agentpop.yaml` so editors can autocomplete — low-cost add; include in v1.
+- Whether to publish a JSON Schema file for `inguma.yaml` so editors can autocomplete — low-cost add; include in v1.

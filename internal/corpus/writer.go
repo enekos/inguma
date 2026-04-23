@@ -19,7 +19,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // IndexEntry is the denormalized summary of a tool used on browse surfaces.

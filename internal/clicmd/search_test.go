@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 func TestSearchCmd(t *testing.T) {

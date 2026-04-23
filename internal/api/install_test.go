@@ -34,7 +34,7 @@ func TestInstall_returnsSnippetPerAdapter(t *testing.T) {
 	if parsed.Slug != "tool-a" {
 		t.Errorf("slug = %q", parsed.Slug)
 	}
-	if parsed.CLI.Command != "agentpop install tool-a" {
+	if parsed.CLI.Command != "inguma install tool-a" {
 		t.Errorf("cli.command = %q", parsed.CLI.Command)
 	}
 	// all.Default() registers claude-code + cursor

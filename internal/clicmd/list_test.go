@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/state"
 )
 
 func TestList_prints(t *testing.T) {

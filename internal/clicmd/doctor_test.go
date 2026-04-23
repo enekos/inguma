@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters"
 )
 
 func TestDoctor_printsHarnessStatus(t *testing.T) {

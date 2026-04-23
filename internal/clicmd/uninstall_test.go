@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/state"
 )
 
 func TestUninstall_removesFromDetected(t *testing.T) {

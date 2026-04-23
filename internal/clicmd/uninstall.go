@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // UninstallDeps bundles deps for Uninstall.
@@ -16,14 +16,14 @@ type UninstallDeps struct {
 	Stdout    io.Writer
 }
 
-// UninstallArgs are the flags for `agentpop uninstall`.
+// UninstallArgs are the flags for `inguma uninstall`.
 type UninstallArgs struct {
 	Slug      string
 	Harnesses []string
 	AssumeYes bool
 }
 
-// Uninstall is the `agentpop uninstall <slug>` command.
+// Uninstall is the `inguma uninstall <slug>` command.
 // It targets every harness that currently has a record for <slug>,
 // unless --harness restricts it further.
 func Uninstall(ctx context.Context, d UninstallDeps, a UninstallArgs) error {

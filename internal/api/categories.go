@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/enekos/agentpop/internal/corpus"
+	"github.com/enekos/inguma/internal/corpus"
 )
 
 type categoryCount struct {

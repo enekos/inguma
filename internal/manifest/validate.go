@@ -2,10 +2,9 @@ package manifest
 
 import (
 	"fmt"
-	"regexp"
-)
 
-var slugRe = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
+	"github.com/enekos/inguma/internal/namespace"
+)
 
 // Validate checks a parsed Tool for semantic correctness.
 // Syntactic / unknown-key errors are caught earlier in Parse.
@@ -16,8 +15,8 @@ func Validate(t *Tool) error {
 	if t.Name == "" {
 		return fmt.Errorf("manifest: name is required")
 	}
-	if !slugRe.MatchString(t.Name) {
-		return fmt.Errorf("manifest: name %q must match %s", t.Name, slugRe)
+	if _, err := namespace.Parse(t.Name); err != nil {
+		return fmt.Errorf("manifest: name %q invalid: %w", t.Name, err)
 	}
 	if t.DisplayName == "" {
 		return fmt.Errorf("manifest: display_name is required")

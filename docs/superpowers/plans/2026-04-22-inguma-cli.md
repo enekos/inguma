@@ -1,14 +1,14 @@
-# Agentpop CLI Implementation Plan
+# Inguma CLI Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the `agentpop` user-facing CLI: `install`, `uninstall`, `list`, `search`, `show`, `doctor`, `update`. It fetches manifests from the marketplace api, picks the right install source for CLI-kind tools, applies config changes to every detected harness via the adapter interface, and keeps a local install record at `~/.agentpop/state.json`.
+**Goal:** Build the `inguma` user-facing CLI: `install`, `uninstall`, `list`, `search`, `show`, `doctor`, `update`. It fetches manifests from the marketplace api, picks the right install source for CLI-kind tools, applies config changes to every detected harness via the adapter interface, and keeps a local install record at `~/.inguma/state.json`.
 
-**Architecture:** `cmd/agentpop/main.go` dispatches to command functions in `internal/clicmd`. Commands share four thin packages: `internal/apiclient` (HTTP to `apid`), `internal/state` (install record), `internal/toolfetch` (CLI-kind install source picker + binary fetch), and the existing `internal/adapters` registry. Subcommand parsing uses stdlib `flag.FlagSet` per command — no external CLI library.
+**Architecture:** `cmd/inguma/main.go` dispatches to command functions in `internal/clicmd`. Commands share four thin packages: `internal/apiclient` (HTTP to `apid`), `internal/state` (install record), `internal/toolfetch` (CLI-kind install source picker + binary fetch), and the existing `internal/adapters` registry. Subcommand parsing uses stdlib `flag.FlagSet` per command — no external CLI library.
 
 **Tech Stack:** Go 1.22+, `net/http`, `flag`, `crypto/sha256`. No new dependencies.
 
-**Design spec:** `docs/superpowers/specs/2026-04-22-agentpop-marketplace-design.md`
+**Design spec:** `docs/superpowers/specs/2026-04-22-inguma-marketplace-design.md`
 **Depends on:** plans 1 and 2 merged.
 
 ---
@@ -40,7 +40,7 @@ internal/
     doctor.go
     doctor_test.go
 cmd/
-  agentpop/
+  inguma/
     main.go
     main_test.go
 ```
@@ -138,7 +138,7 @@ go test ./internal/apiclient/...
 
 Create `internal/apiclient/client.go`:
 ```go
-// Package apiclient is the agentpop CLI's HTTP client for the apid API.
+// Package apiclient is the inguma CLI's HTTP client for the apid API.
 package apiclient
 
 import (
@@ -150,7 +150,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // ToolResponse mirrors GET /api/tools/{slug}.
@@ -193,7 +193,7 @@ type Client struct {
 	http    *http.Client
 }
 
-// New returns a client rooted at baseURL (e.g. "https://agentpop.example").
+// New returns a client rooted at baseURL (e.g. "https://inguma.example").
 func New(baseURL string) *Client {
 	return &Client{
 		baseURL: strings.TrimRight(baseURL, "/"),
@@ -358,7 +358,7 @@ func TestRecord_dedupes(t *testing.T) {
 
 Create `internal/state/state.go`:
 ```go
-// Package state persists agentpop's per-user install record at ~/.agentpop/state.json.
+// Package state persists inguma's per-user install record at ~/.inguma/state.json.
 // The record is advisory: it makes `list` and `uninstall` fast, but the harness
 // config files remain the source of truth for what's actually configured.
 package state
@@ -385,10 +385,10 @@ type State struct {
 	Installs []Install `json:"installs"`
 }
 
-// DefaultPath returns ~/.agentpop/state.json.
+// DefaultPath returns ~/.inguma/state.json.
 func DefaultPath() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".agentpop", "state.json")
+	return filepath.Join(home, ".inguma", "state.json")
 }
 
 // Load reads a state file. A missing file is treated as an empty state.
@@ -483,7 +483,7 @@ Expect PASS.
 
 ```bash
 git add internal/state
-git commit -m "feat(state): persistent install record at ~/.agentpop/state.json"
+git commit -m "feat(state): persistent install record at ~/.inguma/state.json"
 ```
 
 ---
@@ -513,7 +513,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func TestPickSource_prefersFirstAvailable(t *testing.T) {
@@ -625,7 +625,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // haveFn reports whether a command is available on PATH.
@@ -658,7 +658,7 @@ func pickSource(m manifest.Tool, have haveFn) (manifest.InstallSource, bool) {
 }
 
 // Install picks a source and runs it. For npm/go it shells out; for binary it
-// fetches into ~/.agentpop/bin/<bin> (creating the dir). Returns the source
+// fetches into ~/.inguma/bin/<bin> (creating the dir). Returns the source
 // string to record in state (e.g. "npm:@scope/pkg").
 func Install(m manifest.Tool) (source string, err error) {
 	return installWith(m, realHave, defaultBinDir())
@@ -756,7 +756,7 @@ func expandTemplate(t string) string {
 
 func defaultBinDir() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".agentpop", "bin")
+	return filepath.Join(home, ".inguma", "bin")
 }
 ```
 
@@ -800,11 +800,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // fakeAdapter is a minimal harness adapter we can wire into a Registry.
@@ -946,7 +946,7 @@ func TestInstall_explicitHarness(t *testing.T) {
 
 Create `internal/clicmd/install.go`:
 ```go
-// Package clicmd implements the agentpop CLI subcommands.
+// Package clicmd implements the inguma CLI subcommands.
 // Each command is a function that takes typed Deps + Args for testability.
 package clicmd
 
@@ -956,11 +956,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/state"
-	"github.com/enekos/agentpop/internal/toolfetch"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/state"
+	"github.com/enekos/inguma/internal/toolfetch"
 )
 
 // InstallDeps bundles injectable dependencies for Install.
@@ -974,7 +974,7 @@ type InstallDeps struct {
 	FetchCLI func(manifest.Tool) (string, error)
 }
 
-// InstallArgs are the CLI flags / args for `agentpop install`.
+// InstallArgs are the CLI flags / args for `inguma install`.
 type InstallArgs struct {
 	Slug      string
 	Harnesses []string // explicit filter; empty = all detected
@@ -983,7 +983,7 @@ type InstallArgs struct {
 	BackupDir string // passed to adapter.Install
 }
 
-// Install is the `agentpop install <slug>` command.
+// Install is the `inguma install <slug>` command.
 func Install(ctx context.Context, d InstallDeps, a InstallArgs) error {
 	if a.Slug == "" {
 		return fmt.Errorf("install: slug required")
@@ -1115,8 +1115,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/state"
 )
 
 func TestUninstall_removesFromDetected(t *testing.T) {
@@ -1166,8 +1166,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // UninstallDeps bundles deps for Uninstall.
@@ -1177,14 +1177,14 @@ type UninstallDeps struct {
 	Stdout    io.Writer
 }
 
-// UninstallArgs are the flags for `agentpop uninstall`.
+// UninstallArgs are the flags for `inguma uninstall`.
 type UninstallArgs struct {
 	Slug      string
 	Harnesses []string
 	AssumeYes bool
 }
 
-// Uninstall is the `agentpop uninstall <slug>` command.
+// Uninstall is the `inguma uninstall <slug>` command.
 // It targets every harness that currently has a record for <slug>,
 // unless --harness restricts it further.
 func Uninstall(ctx context.Context, d UninstallDeps, a UninstallArgs) error {
@@ -1269,7 +1269,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/state"
 )
 
 func TestList_prints(t *testing.T) {
@@ -1312,7 +1312,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // ListDeps bundles deps for List.
@@ -1357,7 +1357,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 func TestSearchCmd(t *testing.T) {
@@ -1393,7 +1393,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 // SearchDeps bundles deps for Search.
@@ -1402,7 +1402,7 @@ type SearchDeps struct {
 	Stdout io.Writer
 }
 
-// SearchArgs are the flags for `agentpop search`.
+// SearchArgs are the flags for `inguma search`.
 type SearchArgs struct {
 	Query string
 	Kind  string
@@ -1447,7 +1447,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 func TestShow(t *testing.T) {
@@ -1461,7 +1461,7 @@ func TestShow(t *testing.T) {
 	mux.HandleFunc("/api/install/", func(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"slug": "tool-a",
-			"cli":  map[string]any{"command": "agentpop install tool-a"},
+			"cli":  map[string]any{"command": "inguma install tool-a"},
 			"snippets": []map[string]any{
 				{"harness_id": "claude-code", "display_name": "Claude Code", "format": "json", "content": "{}"},
 			},
@@ -1476,7 +1476,7 @@ func TestShow(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := out.String()
-	if !strings.Contains(s, "Tool A") || !strings.Contains(s, "agentpop install tool-a") || !strings.Contains(s, "Claude Code") {
+	if !strings.Contains(s, "Tool A") || !strings.Contains(s, "inguma install tool-a") || !strings.Contains(s, "Claude Code") {
 		t.Errorf("out = %q", s)
 	}
 }
@@ -1493,7 +1493,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 // ShowDeps bundles deps for Show.
@@ -1502,7 +1502,7 @@ type ShowDeps struct {
 	Stdout io.Writer
 }
 
-// ShowArgs are the args for `agentpop show`.
+// ShowArgs are the args for `inguma show`.
 type ShowArgs struct {
 	Slug string
 }
@@ -1552,7 +1552,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters"
 )
 
 func TestDoctor_printsHarnessStatus(t *testing.T) {
@@ -1587,7 +1587,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters"
 )
 
 // DoctorDeps bundles deps for Doctor.
@@ -1597,7 +1597,7 @@ type DoctorDeps struct {
 }
 
 // Doctor prints the detection status of every registered adapter — useful
-// for "why isn't agentpop writing to my Cursor config" debugging.
+// for "why isn't inguma writing to my Cursor config" debugging.
 func Doctor(d DoctorDeps) error {
 	tw := tabwriter.NewWriter(d.Stdout, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(tw, "HARNESS\tSTATUS\tCONFIG")
@@ -1632,18 +1632,18 @@ git commit -m "feat(clicmd): list, search, show, and doctor commands"
 
 ---
 
-## Task 7: `cmd/agentpop` main — subcommand dispatch
+## Task 7: `cmd/inguma` main — subcommand dispatch
 
 The binary wires user input to the command functions. No external CLI library — each subcommand parses its own `flag.FlagSet`.
 
 **Files:**
-- Create: `cmd/agentpop/main.go`
-- Create: `cmd/agentpop/main_test.go`
+- Create: `cmd/inguma/main.go`
+- Create: `cmd/inguma/main_test.go`
 - Modify: `Makefile`
 
 - [ ] **Step 1: Write failing test (smoke test that subcommand dispatch works)**
 
-Create `cmd/agentpop/main_test.go`:
+Create `cmd/inguma/main_test.go`:
 ```go
 package main
 
@@ -1679,14 +1679,14 @@ func TestUsage_unknown(t *testing.T) {
 - [ ] **Step 2: Run test (expect FAIL)**
 
 ```bash
-go test ./cmd/agentpop/...
+go test ./cmd/inguma/...
 ```
 
 - [ ] **Step 3: Implement**
 
-Create `cmd/agentpop/main.go`:
+Create `cmd/inguma/main.go`:
 ```go
-// Command agentpop is the user-facing CLI for the agentpop marketplace.
+// Command inguma is the user-facing CLI for the inguma marketplace.
 package main
 
 import (
@@ -1697,14 +1697,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/clicmd"
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/adapters/all"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/clicmd"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // defaultAPI is the production marketplace URL. Override with --api.
-const defaultAPI = "https://agentpop.dev"
+const defaultAPI = "https://inguma.dev"
 
 func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
 
@@ -1737,14 +1737,14 @@ func run(args []string, stdout, stderr io.Writer) int {
 		printUsage(stdout)
 		return 0
 	default:
-		fmt.Fprintf(stderr, "agentpop: unknown command %q\n\n", sub)
+		fmt.Fprintf(stderr, "inguma: unknown command %q\n\n", sub)
 		printUsage(stderr)
 		return 2
 	}
 }
 
 func printUsage(w io.Writer) {
-	fmt.Fprint(w, `Usage: agentpop <command> [flags]
+	fmt.Fprint(w, `Usage: inguma <command> [flags]
 
 Commands:
   install    Install a tool into detected harnesses
@@ -1754,7 +1754,7 @@ Commands:
   show       Show a tool's details and install snippets
   doctor     Report harness detection status
 
-Run "agentpop <command> -h" for command-specific flags.
+Run "inguma <command> -h" for command-specific flags.
 `)
 }
 
@@ -1791,7 +1791,7 @@ func runInstall(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		AssumeYes: *yes,
 	})
 	if err != nil {
-		fmt.Fprintln(stderr, "agentpop:", err)
+		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}
 	return 0
@@ -1819,7 +1819,7 @@ func runUninstall(ctx context.Context, args []string, stdout, stderr io.Writer) 
 		AssumeYes: *yes,
 	})
 	if err != nil {
-		fmt.Fprintln(stderr, "agentpop:", err)
+		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}
 	return 0
@@ -1832,7 +1832,7 @@ func runList(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if err := clicmd.List(clicmd.ListDeps{StatePath: state.DefaultPath(), Stdout: stdout}); err != nil {
-		fmt.Fprintln(stderr, "agentpop:", err)
+		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}
 	return 0
@@ -1853,7 +1853,7 @@ func runSearch(ctx context.Context, args []string, stdout, stderr io.Writer) int
 	}
 	err := clicmd.Search(ctx, clicmd.SearchDeps{API: apiclient.New(*apiURL), Stdout: stdout}, clicmd.SearchArgs{Query: q, Kind: *kind})
 	if err != nil {
-		fmt.Fprintln(stderr, "agentpop:", err)
+		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}
 	return 0
@@ -1872,7 +1872,7 @@ func runShow(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	err := clicmd.Show(ctx, clicmd.ShowDeps{API: apiclient.New(*apiURL), Stdout: stdout}, clicmd.ShowArgs{Slug: fs.Arg(0)})
 	if err != nil {
-		fmt.Fprintln(stderr, "agentpop:", err)
+		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}
 	return 0
@@ -1885,7 +1885,7 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if err := clicmd.Doctor(clicmd.DoctorDeps{Adapters: all.Default(), Stdout: stdout}); err != nil {
-		fmt.Fprintln(stderr, "agentpop:", err)
+		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}
 	return 0
@@ -1898,23 +1898,23 @@ Note: `update` is intentionally omitted from v1 — the self-update behavior is 
 
 Edit `Makefile`:
 ```makefile
-.PHONY: build test vet fmt crawler apid agentpop
+.PHONY: build test vet fmt crawler apid inguma
 ```
 
 ```makefile
-build: crawler apid agentpop
+build: crawler apid inguma
 ```
 
 Add at the bottom:
 ```makefile
-agentpop:
-	$(GO) build -o $(BIN)/agentpop ./cmd/agentpop
+inguma:
+	$(GO) build -o $(BIN)/inguma ./cmd/inguma
 ```
 
 - [ ] **Step 5: Run tests**
 
 ```bash
-go test ./cmd/agentpop/...
+go test ./cmd/inguma/...
 ```
 
 Expect PASS (two tests).
@@ -1922,24 +1922,24 @@ Expect PASS (two tests).
 - [ ] **Step 6: Build + smoke**
 
 ```bash
-make agentpop
-bin/agentpop
-bin/agentpop help
-bin/agentpop doctor
-bin/agentpop list
+make inguma
+bin/inguma
+bin/inguma help
+bin/inguma doctor
+bin/inguma list
 ```
 
 Expected:
-- `bin/agentpop` (no args) → usage on stderr, exit 2.
-- `bin/agentpop help` → usage on stdout, exit 0.
-- `bin/agentpop doctor` → table printing `claude-code` and `cursor` status (detection depends on your local system).
-- `bin/agentpop list` → "no tools installed" (fresh state).
+- `bin/inguma` (no args) → usage on stderr, exit 2.
+- `bin/inguma help` → usage on stdout, exit 0.
+- `bin/inguma doctor` → table printing `claude-code` and `cursor` status (detection depends on your local system).
+- `bin/inguma list` → "no tools installed" (fresh state).
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add cmd/agentpop Makefile
-git commit -m "feat(cmd/agentpop): subcommand dispatch"
+git add cmd/inguma Makefile
+git commit -m "feat(cmd/inguma): subcommand dispatch"
 ```
 
 ---
@@ -1966,9 +1966,9 @@ sleep 1
 
 In the same shell:
 ```bash
-bin/agentpop --help || true
-bin/agentpop search --api http://localhost:8091 hello 2>&1 | head   # expect: search backend unavailable (503)
-bin/agentpop show   --api http://localhost:8091 tool-a | head -40
+bin/inguma --help || true
+bin/inguma search --api http://localhost:8091 hello 2>&1 | head   # expect: search backend unavailable (503)
+bin/inguma show   --api http://localhost:8091 tool-a | head -40
 kill $APID
 ```
 
@@ -1985,7 +1985,7 @@ git diff --cached --quiet || git commit -m "chore: go mod tidy and gofmt"
 
 ## Out of scope (deferred)
 
-- `agentpop update` — self-update of the CLI binary. Ship via the installer script post-v1.
+- `inguma update` — self-update of the CLI binary. Ship via the installer script post-v1.
 - Confirm prompts with real stdin TTY handling (we default to `-y` in tests, print the intent message otherwise; real stdin interactive confirm is fast-follow).
 - Rollback closures — `adapter.Install` already writes atomically with backups, so a failed multi-harness install leaves earlier harnesses configured; fine for v1 (user can re-run with `-y` after fixing the failing one, or uninstall).
 - `update` subcommand for installed tools (re-fetching latest manifests).
