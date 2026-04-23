@@ -22,6 +22,7 @@ func main() {
 	local := flag.String("local", "", "if set, use LocalFetcher rooted at this dir (for testing)")
 	skipMarrow := flag.Bool("skip-marrow", false, "do not run `marrow sync` after writing corpus")
 	marrowBin := flag.String("marrow-bin", "marrow", "marrow binary path")
+	artifactsDir := flag.String("artifacts", "./artifacts", "path to artifacts directory")
 	flag.Parse()
 
 	var fetcher crawl.Fetcher
@@ -45,7 +46,27 @@ func main() {
 		os.Exit(1)
 	}
 	log.Info("crawl complete", "ok", len(sum.OK), "failed", len(sum.Failed))
-	if len(sum.Failed) > 0 {
+
+	vstats, verr := crawl.RunVersioned(crawl.VersionedOptions{
+		RegistryPath: *registry,
+		CorpusDir:    *corpus,
+		ArtifactsDir: *artifactsDir,
+		Fetcher:      fetcher,
+		Logger:       log,
+	})
+	if verr != nil {
+		fmt.Fprintln(os.Stderr, "crawler versioned:", verr)
+		os.Exit(1)
+	}
+	log.Info("versioned crawl complete",
+		"entries", vstats.Entries,
+		"new_versions", vstats.NewVersions,
+		"failed", len(vstats.Failed))
+	for _, f := range vstats.Failed {
+		fmt.Fprintf(os.Stderr, "versioned failure: repo=%s version=%s err=%s\n", f.Repo, f.Version, f.Error)
+	}
+
+	if len(sum.Failed) > 0 || len(vstats.Failed) > 0 {
 		os.Exit(2) // non-zero so CI / systemd notices, but corpus is still valid
 	}
 }
