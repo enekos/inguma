@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/enekos/agentpop/internal/versioning"
 )
 
 // VersionedEntry is the input to WriteVersion. The caller is responsible
@@ -56,4 +58,52 @@ func atomicWrite(p string, body []byte) error {
 		return err
 	}
 	return os.Rename(tmp.Name(), p)
+}
+
+// ListVersions returns canonical version strings present on disk for
+// @owner/slug, sorted ascending by semver. Raw directory entries that
+// are not valid semver are silently dropped.
+func ListVersions(root, owner, slug string) ([]string, error) {
+	dir := filepath.Join(root, owner, slug, "versions")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	raw := make([]string, 0, len(entries))
+	for _, e := range entries {
+		if e.IsDir() {
+			raw = append(raw, e.Name())
+		}
+	}
+	vs := versioning.ScanTags(raw)
+	out := make([]string, len(vs))
+	for i, v := range vs {
+		out[i] = v.Canonical()
+	}
+	return out, nil
+}
+
+// ReadVersion returns manifest, index.md, and artifact sha for a specific version.
+func ReadVersion(root, owner, slug, version string) (manifestJSON []byte, indexMD []byte, sha string, err error) {
+	base := filepath.Join(root, owner, slug, "versions", version)
+	m, err := os.ReadFile(filepath.Join(base, "manifest.json"))
+	if err != nil {
+		return nil, nil, "", err
+	}
+	idx, err := os.ReadFile(filepath.Join(base, "index.md"))
+	if err != nil {
+		return nil, nil, "", err
+	}
+	shab, err := os.ReadFile(filepath.Join(base, "artifact.sha256"))
+	if err != nil {
+		return nil, nil, "", err
+	}
+	return m, idx, string(shab), nil
+}
+
+// HasVersion reports whether a specific version exists in the corpus.
+func HasVersion(root, owner, slug, version string) bool {
+	base := filepath.Join(root, owner, slug, "versions", version)
+	_, err := os.Stat(filepath.Join(base, "manifest.json"))
+	return err == nil
 }
