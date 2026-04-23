@@ -11,6 +11,7 @@ const (
 // Tool is the canonical in-memory representation of an agentpop.yaml manifest.
 type Tool struct {
 	Name          string        `yaml:"name" json:"name"`
+	Version       string        `yaml:"version,omitempty" json:"version,omitempty"`
 	DisplayName   string        `yaml:"display_name" json:"display_name"`
 	Description   string        `yaml:"description" json:"description"`
 	Readme        string        `yaml:"readme" json:"readme"`

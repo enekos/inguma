@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/enekos/agentpop/internal/adapters/all"
 	"github.com/enekos/agentpop/internal/apiclient"
@@ -47,6 +48,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runDoctor(rest, stdout, stderr)
 	case "upgrade":
 		return runUpgrade(ctx, rest, stdout, stderr)
+	case "publish":
+		return runPublish(ctx, rest, stdout, stderr)
 	case "-h", "--help", "help":
 		printUsage(stdout)
 		return 0
@@ -68,6 +71,7 @@ Commands:
   show       Show a tool's details and install snippets
   doctor     Report harness detection status
   upgrade    Upgrade lockfile-pinned packages to newest patch/minor version
+  publish    Tag, push, and poll ingestion of an agentpop tool
 
 Run "agentpop <command> -h" for command-specific flags.
 `)
@@ -230,6 +234,31 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if err := clicmd.Doctor(clicmd.DoctorDeps{Adapters: all.Default(), Stdout: stdout}); err != nil {
+		fmt.Fprintln(stderr, "agentpop:", err)
+		return 1
+	}
+	return 0
+}
+
+func runPublish(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("publish", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	repo := fs.String("repo", "", "path to tool repo (default: current directory)")
+	remote := fs.String("remote", "origin", "git remote to push the tag to")
+	timeout := fs.Duration("timeout", 10*time.Minute, "how long to poll for ingestion (default: 10m)")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	err := clicmd.Publish(ctx, clicmd.PublishDeps{
+		API:    apiclient.New(*apiURL),
+		Stdout: stdout,
+	}, clicmd.PublishArgs{
+		RepoDir: *repo,
+		Remote:  *remote,
+		Timeout: *timeout,
+	})
+	if err != nil {
 		fmt.Fprintln(stderr, "agentpop:", err)
 		return 1
 	}
