@@ -47,6 +47,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/categories", s.handleCategories)
 	mux.HandleFunc("GET /api/tools", s.handleBrowse)
 	mux.HandleFunc("GET /api/install/{slug}", s.handleInstall)
+	mux.HandleFunc("GET /api/install/{ownerAt}/{slug}", s.handleVersionedInstall)
+	mux.HandleFunc("GET /api/install/{ownerAt}/{slug}/{versionAt}", s.handleVersionedInstallAtVersion)
 	mux.HandleFunc("GET /api/search", s.handleSearch)
 	mux.HandleFunc("GET /api/artifacts/{ownerAt}/{slug}/{versionAt}", s.handleArtifact)
 	// Later tasks add more routes here.
