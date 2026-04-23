@@ -5,6 +5,7 @@ go 1.25.1
 require gopkg.in/yaml.v3 v3.0.1
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	golang.org/x/mod v0.35.0
 	modernc.org/sqlite v1.49.1
 )
