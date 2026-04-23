@@ -1,6 +1,6 @@
-# Agentpop documentation
+# Inguma documentation
 
-Agentpop is a package manager for AI agents — a marketplace + CLI for discovering, installing, and versioning tools (MCP servers, CLI tools, skills, subagents, slash commands) across agent harnesses like Claude Code and Cursor.
+Inguma is a package manager for AI agents — a marketplace + CLI for discovering, installing, and versioning tools (MCP servers, CLI tools, skills, subagents, slash commands) across agent harnesses like Claude Code and Cursor.
 
 ## Start here
 
@@ -10,16 +10,16 @@ Agentpop is a package manager for AI agents — a marketplace + CLI for discover
 
 ## Reference
 
-- **[CLI](cli.md)** — every `agentpop` subcommand, its flags, and its behavior.
+- **[CLI](cli.md)** — every `inguma` subcommand, its flags, and its behavior.
 - **[HTTP API](api.md)** — every endpoint apid serves and the response shapes.
-- **[Manifest (`agentpop.yaml`)](manifest.md)** — the per-tool manifest schema.
+- **[Manifest (`inguma.yaml`)](manifest.md)** — the per-tool manifest schema.
 - **[Versioning](versioning.md)** — semver rules, tag conventions, range specifiers, resolution.
-- **[Lockfile (`agentpop.lock`)](lockfile.md)** — reproducible installs with `--frozen` and `upgrade`.
+- **[Lockfile (`inguma.lock`)](lockfile.md)** — reproducible installs with `--frozen` and `upgrade`.
 
 ## Authoring tools
 
 - **[Publishing](publishing.md)** — one-time registry PR, then `git tag` every release.
-- **[Adapters](adapters.md)** — write a harness adapter so your harness can install Agentpop tools.
+- **[Adapters](adapters.md)** — write a harness adapter so your harness can install Inguma tools.
 - **[Crawler](crawler.md)** — what the crawler reads, what it writes, when it runs.
 
 ## Internals

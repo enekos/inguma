@@ -1,4 +1,4 @@
-module github.com/enekos/agentpop
+module github.com/enekos/inguma
 
 go 1.25.1
 

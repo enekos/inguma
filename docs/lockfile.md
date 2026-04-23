@@ -1,6 +1,6 @@
-# `agentpop.lock`
+# `inguma.lock`
 
-Agentpop writes a lockfile to the directory you install from. It pins every package to an exact version + SHA256 so installs are reproducible.
+Inguma writes a lockfile to the directory you install from. It pins every package to an exact version + SHA256 so installs are reproducible.
 
 ## Shape
 
@@ -19,14 +19,14 @@ kind = "mcp"
 
 ## When it's written
 
-`agentpop install @owner/slug[@version|--range ...]` writes or updates `agentpop.lock` in the current directory after a successful adapter install. Legacy bare-slug installs (`agentpop install bar`) do NOT touch the lockfile.
+`inguma install @owner/slug[@version|--range ...]` writes or updates `inguma.lock` in the current directory after a successful adapter install. Legacy bare-slug installs (`inguma install bar`) do NOT touch the lockfile.
 
-- `--lock-dir <dir>` writes to `<dir>/agentpop.lock` instead.
+- `--lock-dir <dir>` writes to `<dir>/inguma.lock` instead.
 - `--lock-dir -` disables lockfile writing entirely.
 
 ## `--frozen`
 
-`agentpop install --frozen` refuses to resolve anything not already pinned in the lockfile.
+`inguma install --frozen` refuses to resolve anything not already pinned in the lockfile.
 
 - `--frozen` with no positional slug: installs every entry at its exact pinned version.
 - `--frozen @owner/slug`: resolves to the locked version and errors if the slug isn't in the lockfile.
@@ -34,14 +34,14 @@ kind = "mcp"
 
 CI should always use `--frozen`.
 
-## `agentpop upgrade`
+## `inguma upgrade`
 
 `upgrade` is the only command that moves a pin forward. For each entry, it resolves the range `^<major>.<minor>` of the currently-locked version, reinstalls if a newer version satisfies, and writes the new version + SHA back to the lockfile.
 
 ```sh
-agentpop upgrade                 # upgrade every lockfile entry
-agentpop upgrade @foo/bar        # upgrade only this one
-agentpop upgrade --dry-run       # print diffs without applying
+inguma upgrade                 # upgrade every lockfile entry
+inguma upgrade @foo/bar        # upgrade only this one
+inguma upgrade --dry-run       # print diffs without applying
 ```
 
 ## Resolution rules

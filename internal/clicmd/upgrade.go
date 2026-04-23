@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/lockfile"
-	"github.com/enekos/agentpop/internal/namespace"
-	"github.com/enekos/agentpop/internal/state"
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/lockfile"
+	"github.com/enekos/inguma/internal/namespace"
+	"github.com/enekos/inguma/internal/state"
+	"github.com/enekos/inguma/internal/versioning"
 )
 
 // UpgradeDeps bundles injectable dependencies for Upgrade.
@@ -24,7 +24,7 @@ type UpgradeDeps struct {
 	Stdout    io.Writer
 }
 
-// UpgradeArgs are the args for `agentpop upgrade [slug]`.
+// UpgradeArgs are the args for `inguma upgrade [slug]`.
 type UpgradeArgs struct {
 	Slug      string // optional; empty = upgrade every lockfile entry
 	Harnesses []string
@@ -39,7 +39,7 @@ func Upgrade(ctx context.Context, d UpgradeDeps, a UpgradeArgs) error {
 	if lockDir == "" {
 		lockDir = "."
 	}
-	lockPath := filepath.Join(lockDir, "agentpop.lock")
+	lockPath := filepath.Join(lockDir, "inguma.lock")
 	lock, err := lockfile.ReadFile(lockPath)
 	if err != nil {
 		return fmt.Errorf("upgrade: read lockfile %s: %w", lockPath, err)

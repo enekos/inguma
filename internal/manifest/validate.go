@@ -3,7 +3,7 @@ package manifest
 import (
 	"fmt"
 
-	"github.com/enekos/agentpop/internal/namespace"
+	"github.com/enekos/inguma/internal/namespace"
 )
 
 // Validate checks a parsed Tool for semantic correctness.

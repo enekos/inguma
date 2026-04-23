@@ -1,4 +1,4 @@
-// Package state persists agentpop's per-user install record at ~/.agentpop/state.json.
+// Package state persists inguma's per-user install record at ~/.inguma/state.json.
 // The record is advisory: it makes `list` and `uninstall` fast, but the harness
 // config files remain the source of truth for what's actually configured.
 package state
@@ -25,10 +25,10 @@ type State struct {
 	Installs []Install `json:"installs"`
 }
 
-// DefaultPath returns ~/.agentpop/state.json.
+// DefaultPath returns ~/.inguma/state.json.
 func DefaultPath() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".agentpop", "state.json")
+	return filepath.Join(home, ".inguma", "state.json")
 }
 
 // Load reads a state file. A missing file is treated as an empty state.

@@ -1,4 +1,4 @@
-// Package apiclient is the agentpop CLI's HTTP client for the apid API.
+// Package apiclient is the inguma CLI's HTTP client for the apid API.
 package apiclient
 
 import (
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // ToolResponse mirrors GET /api/tools/{slug}.
@@ -53,7 +53,7 @@ type Client struct {
 	http    *http.Client
 }
 
-// New returns a client rooted at baseURL (e.g. "https://agentpop.example").
+// New returns a client rooted at baseURL (e.g. "https://inguma.example").
 func New(baseURL string) *Client {
 	return &Client{
 		baseURL: strings.TrimRight(baseURL, "/"),

@@ -8,10 +8,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
+	"github.com/enekos/inguma/internal/versioning"
 )
 
 type versionedInstallResponse struct {
@@ -126,7 +126,7 @@ func (s *Server) installByName(w http.ResponseWriter, r *http.Request, explicit 
 		Slug:            slug,
 		ResolvedVersion: resolved,
 		SHA256:          sha,
-		CLI:             cliBlock{Command: "agentpop install @" + owner + "/" + slug + "@" + resolved},
+		CLI:             cliBlock{Command: "inguma install @" + owner + "/" + slug + "@" + resolved},
 		Snippets:        out,
 	})
 }

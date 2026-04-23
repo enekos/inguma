@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters"
 )
 
 // DoctorDeps bundles deps for Doctor.
@@ -15,7 +15,7 @@ type DoctorDeps struct {
 }
 
 // Doctor prints the detection status of every registered adapter — useful
-// for "why isn't agentpop writing to my Cursor config" debugging.
+// for "why isn't inguma writing to my Cursor config" debugging.
 func Doctor(d DoctorDeps) error {
 	tw := tabwriter.NewWriter(d.Stdout, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(tw, "HARNESS\tSTATUS\tCONFIG")

@@ -9,9 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/versioning"
 )
 
 var nameRe = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)

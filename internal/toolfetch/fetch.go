@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // haveFn reports whether a command is available on PATH.
@@ -49,7 +49,7 @@ func pickSource(m manifest.Tool, have haveFn) (manifest.InstallSource, bool) {
 }
 
 // Install picks a source and runs it. For npm/go it shells out; for binary it
-// fetches into ~/.agentpop/bin/<bin> (creating the dir). Returns the source
+// fetches into ~/.inguma/bin/<bin> (creating the dir). Returns the source
 // string to record in state (e.g. "npm:@scope/pkg").
 func Install(m manifest.Tool) (source string, err error) {
 	return installWith(m, realHave, defaultBinDir())
@@ -147,5 +147,5 @@ func expandTemplate(t string) string {
 
 func defaultBinDir() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".agentpop", "bin")
+	return filepath.Join(home, ".inguma", "bin")
 }

@@ -1,6 +1,6 @@
 # Adapters
 
-An **adapter** is agentpop's plug-point for a specific agent harness. Each adapter knows four things about its harness:
+An **adapter** is inguma's plug-point for a specific agent harness. Each adapter knows four things about its harness:
 
 1. Whether the harness is installed on this system.
 2. Where its config lives.
@@ -64,7 +64,7 @@ For tests, use `adapters.NewRegistry(...)` and hand-roll a fake adapter.
 `Install(manifest, opts)` must be:
 
 - **Atomic.** Read the existing config, compute the new one in-memory, write to a temp file in the same directory, `rename` into place. Never leave the config half-written.
-- **Backed up.** Copy the pre-change config into `opts.BackupDir` (defaults to `~/.agentpop/backups/<timestamp>/`) before writing.
+- **Backed up.** Copy the pre-change config into `opts.BackupDir` (defaults to `~/.inguma/backups/<timestamp>/`) before writing.
 - **Reversible.** Return a rollback closure (or rely on the backup). `--dry-run` prints the diff without writing.
 
 ### Snippet contract
@@ -84,8 +84,8 @@ import (
     "os"
     "path/filepath"
 
-    "github.com/enekos/agentpop/internal/adapters"
-    "github.com/enekos/agentpop/internal/manifest"
+    "github.com/enekos/inguma/internal/adapters"
+    "github.com/enekos/inguma/internal/manifest"
 )
 
 type Adapter struct{}
@@ -170,4 +170,4 @@ Run: `go test ./internal/adapters/<your-harness>/...`.
 
 ## Version-aware installs
 
-The install flow passes the full `manifest.Tool` — which includes the tool's version at that point. Adapters don't need to do anything special; they write whatever the manifest says. Agentpop handles version resolution upstream; adapters just apply.
+The install flow passes the full `manifest.Tool` — which includes the tool's version at that point. Adapters don't need to do anything special; they write whatever the manifest says. Inguma handles version resolution upstream; adapters just apply.

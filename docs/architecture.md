@@ -1,6 +1,6 @@
 # Architecture
 
-Agentpop is four Go components plus a SvelteKit frontend, all reading a shared on-disk corpus. No user-writable database is load-bearing for install correctness.
+Inguma is four Go components plus a SvelteKit frontend, all reading a shared on-disk corpus. No user-writable database is load-bearing for install correctness.
 
 ## The components
 
@@ -8,7 +8,7 @@ Agentpop is four Go components plus a SvelteKit frontend, all reading a shared o
  ┌────────────────┐     PR merge      ┌─────────────────────┐
  │ registry repo  │──────────────────▶│  crawler (Go)       │
  │ tools.yaml     │                   │  • clones tool repos│
- └────────────────┘                   │  • reads agentpop.  │
+ └────────────────┘                   │  • reads inguma.  │
                                       │    yaml + README    │
                                       │  • writes manifest  │
                                       │    + markdown + tgz │
@@ -31,14 +31,14 @@ Agentpop is four Go components plus a SvelteKit frontend, all reading a shared o
  └────────────────┘            └─────────────────────┘
 
  ┌────────────────┐   HTTP
- │ agentpop CLI   │────────▶  apid
+ │ inguma CLI   │────────▶  apid
  │ (end-user Go)  │
  └────────────────┘
 ```
 
 ### registry repo (`registry/tools.yaml`)
 
-Curated list of `{repo, ref}` entries. Adding a tool to the marketplace = opening a PR against this file. The maintainer merges once your repo has a valid `agentpop.yaml`.
+Curated list of `{repo, ref}` entries. Adding a tool to the marketplace = opening a PR against this file. The maintainer merges once your repo has a valid `inguma.yaml`.
 
 ### crawler (`cmd/crawler`)
 
@@ -46,7 +46,7 @@ Runs on an hourly timer. For each registry entry:
 
 1. Lists `v<semver>` tags on the remote via `git ls-remote --tags`.
 2. Compares against versions already present under `corpus/<owner>/<slug>/versions/`.
-3. For each NEW tag: shallow-clones at that tag, validates `agentpop.yaml`, builds an immutable manifest-snapshot tarball, stores it in `artifacts/`, writes `corpus/<owner>/<slug>/versions/<v>/{manifest.json,index.md,artifact.sha256}`, updates `latest.json`.
+3. For each NEW tag: shallow-clones at that tag, validates `inguma.yaml`, builds an immutable manifest-snapshot tarball, stores it in `artifacts/`, writes `corpus/<owner>/<slug>/versions/<v>/{manifest.json,index.md,artifact.sha256}`, updates `latest.json`.
 4. If the repo has zero `v<semver>` tags, ingests a synthetic `v0.0.0` keyed to the HEAD commit SHA (this one version is replaceable in place).
 5. Runs the v1 crawl too for legacy bare-slug compatibility.
 6. Writes a `corpus/_crawl.json` run summary.
@@ -85,7 +85,7 @@ Deterministic gzip-tarballs containing `manifest.json`, `README.md`, optional `L
 
 ### Marrow
 
-Hybrid FTS5 + vector search over the `index.md` files in the corpus. Agentpop does not fork it — it runs as a separate service and apid proxies `/api/search` to it.
+Hybrid FTS5 + vector search over the `index.md` files in the corpus. Inguma does not fork it — it runs as a separate service and apid proxies `/api/search` to it.
 
 ### apid (`cmd/apid`)
 
@@ -102,9 +102,9 @@ See [HTTP API](api.md) for full details.
 
 A SQLite file at `-sqlite <path>` stores derived state only: download counts, audit log. Dropping it leaves installs + browsing working.
 
-### agentpop CLI (`cmd/agentpop`)
+### inguma CLI (`cmd/inguma`)
 
-Talks to apid over HTTP. Subcommands: `install`, `uninstall`, `upgrade`, `list`, `search`, `show`, `doctor`, `publish`. State lives in `~/.agentpop/state.json` (what's installed where) and `agentpop.lock` (what version is pinned) per working directory.
+Talks to apid over HTTP. Subcommands: `install`, `uninstall`, `upgrade`, `list`, `search`, `show`, `doctor`, `publish`. State lives in `~/.inguma/state.json` (what's installed where) and `inguma.lock` (what version is pinned) per working directory.
 
 See [CLI](cli.md) for full details.
 
@@ -129,7 +129,7 @@ Ships with `claudecode` and `cursor`. Community can add more without a core rele
 
 ```
 cmd/
-  agentpop/          end-user CLI
+  inguma/          end-user CLI
   apid/              HTTP API server
   crawler/           periodic ingest job
 
@@ -142,13 +142,13 @@ internal/
   corpus/            on-disk layout reader + writer
   crawl/             crawler logic + fetchers (Local, Git)
   db/                SQLite wrapper + migrations
-  lockfile/          agentpop.lock TOML
-  manifest/          agentpop.yaml parse + validate
+  lockfile/          inguma.lock TOML
+  manifest/          inguma.yaml parse + validate
   marrow/            thin Marrow search client
   namespace/         @owner/slug canonicalization
   registry/          registry/tools.yaml reader
   snippets/          per-harness snippet rendering
-  state/             ~/.agentpop/state.json
+  state/             ~/.inguma/state.json
   toolfetch/         npm/go/binary installer for kind=cli
   versioning/        semver parse, ranges, tag scan
 

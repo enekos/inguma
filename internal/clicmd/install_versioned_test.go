@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/lockfile"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/lockfile"
 )
 
 // versionedFixture returns canned JSON handlers for /api/install and /api/tools versioned routes.
@@ -96,7 +96,7 @@ func TestInstallVersionedWritesLockfile(t *testing.T) {
 		t.Fatalf("expected 1 install call, got %d", len(fa.installed))
 	}
 
-	lk, err := lockfile.ReadFile(filepath.Join(tmpDir, "agentpop.lock"))
+	lk, err := lockfile.ReadFile(filepath.Join(tmpDir, "inguma.lock"))
 	if err != nil {
 		t.Fatalf("read lockfile: %v", err)
 	}
@@ -142,7 +142,7 @@ func TestInstallVersionedExplicit(t *testing.T) {
 		t.Errorf("expected install path to contain @v1.0.0, got %s", capturedPath)
 	}
 
-	lk, err := lockfile.ReadFile(filepath.Join(tmpDir, "agentpop.lock"))
+	lk, err := lockfile.ReadFile(filepath.Join(tmpDir, "inguma.lock"))
 	if err != nil {
 		t.Fatalf("read lockfile: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestInstallFrozenSuccess(t *testing.T) {
 	lk := &lockfile.Lock{Schema: 1, Packages: []lockfile.Entry{
 		{Slug: "@foo/bar", Version: "v1.0.0", SHA256: "abc123sha", Kind: "mcp"},
 	}}
-	if err := lockfile.WriteFile(filepath.Join(tmpDir, "agentpop.lock"), lk); err != nil {
+	if err := lockfile.WriteFile(filepath.Join(tmpDir, "inguma.lock"), lk); err != nil {
 		t.Fatal(err)
 	}
 
@@ -217,7 +217,7 @@ func TestInstallFrozenVersionMismatch(t *testing.T) {
 	lk := &lockfile.Lock{Schema: 1, Packages: []lockfile.Entry{
 		{Slug: "@foo/bar", Version: "v1.0.0", SHA256: "abc", Kind: "mcp"},
 	}}
-	if err := lockfile.WriteFile(filepath.Join(tmpDir, "agentpop.lock"), lk); err != nil {
+	if err := lockfile.WriteFile(filepath.Join(tmpDir, "inguma.lock"), lk); err != nil {
 		t.Fatal(err)
 	}
 
@@ -244,7 +244,7 @@ func TestInstallFrozenMissingSlug(t *testing.T) {
 
 	tmpDir := t.TempDir()
 	lk := &lockfile.Lock{Schema: 1, Packages: []lockfile.Entry{}}
-	if err := lockfile.WriteFile(filepath.Join(tmpDir, "agentpop.lock"), lk); err != nil {
+	if err := lockfile.WriteFile(filepath.Join(tmpDir, "inguma.lock"), lk); err != nil {
 		t.Fatal(err)
 	}
 

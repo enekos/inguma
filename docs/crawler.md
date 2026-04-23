@@ -9,7 +9,7 @@ For each `{repo, ref}` in `registry/tools.yaml`:
 ### v1 pass (legacy bare-slug layout)
 
 1. Shallow-clones at `ref`.
-2. Parses `agentpop.yaml`; validates.
+2. Parses `inguma.yaml`; validates.
 3. Reads the declared README.
 4. Writes `corpus/<slug>/manifest.json` and `corpus/<slug>/index.md`.
 5. Appends to the `_index.json` summary.
@@ -57,9 +57,9 @@ type Fetcher interface {
 ```
 crawler \
     -registry registry/tools.yaml \
-    -corpus /var/lib/agentpop/corpus \
-    -artifacts /var/lib/agentpop/artifacts \
-    -cache /var/lib/agentpop/.cache \
+    -corpus /var/lib/inguma/corpus \
+    -artifacts /var/lib/inguma/artifacts \
+    -cache /var/lib/inguma/.cache \
     -marrow-bin /usr/local/bin/marrow
 ```
 
@@ -84,9 +84,9 @@ Exit codes:
 Run hourly in production. systemd example:
 
 ```ini
-# /etc/systemd/system/agentpop-crawler.timer
+# /etc/systemd/system/inguma-crawler.timer
 [Unit]
-Description=Agentpop crawler
+Description=Inguma crawler
 
 [Timer]
 OnCalendar=hourly
@@ -97,18 +97,18 @@ WantedBy=timers.target
 ```
 
 ```ini
-# /etc/systemd/system/agentpop-crawler.service
+# /etc/systemd/system/inguma-crawler.service
 [Unit]
-Description=Agentpop crawler
+Description=Inguma crawler
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/crawler \
-    -registry /etc/agentpop/registry/tools.yaml \
-    -corpus /var/lib/agentpop/corpus \
-    -artifacts /var/lib/agentpop/artifacts \
-    -cache /var/lib/agentpop/.cache
-User=agentpop
+    -registry /etc/inguma/registry/tools.yaml \
+    -corpus /var/lib/inguma/corpus \
+    -artifacts /var/lib/inguma/artifacts \
+    -cache /var/lib/inguma/.cache
+User=inguma
 ```
 
 ## Determinism and rebuildability

@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
-// minimalManifest returns a minimal valid agentpop.yaml content with @owner/slug name and version.
+// minimalManifest returns a minimal valid inguma.yaml content with @owner/slug name and version.
 func minimalManifest(name, version string) string {
 	v := ""
 	if version != "" {
@@ -80,9 +80,9 @@ func TestPublishTagsPushesAndPolls(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	// Write agentpop.yaml to a temp dir.
+	// Write inguma.yaml to a temp dir.
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "agentpop.yaml"), []byte(minimalManifest("@foo/bar", "1.2.3")), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "inguma.yaml"), []byte(minimalManifest("@foo/bar", "1.2.3")), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -154,7 +154,7 @@ func TestPublishTagsPushesAndPolls(t *testing.T) {
 
 func TestPublishDirtyTree(t *testing.T) {
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "agentpop.yaml"), []byte(minimalManifest("@foo/bar", "1.0.0")), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "inguma.yaml"), []byte(minimalManifest("@foo/bar", "1.0.0")), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -184,7 +184,7 @@ func TestPublishDirtyTree(t *testing.T) {
 
 func TestPublishTagExists(t *testing.T) {
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "agentpop.yaml"), []byte(minimalManifest("@foo/bar", "2.0.0")), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "inguma.yaml"), []byte(minimalManifest("@foo/bar", "2.0.0")), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -219,7 +219,7 @@ func TestPublishTagExists(t *testing.T) {
 func TestPublishInvalidName(t *testing.T) {
 	dir := t.TempDir()
 	// bare name (no @owner/)
-	if err := os.WriteFile(filepath.Join(dir, "agentpop.yaml"), []byte(minimalManifest("bar", "1.0.0")), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "inguma.yaml"), []byte(minimalManifest("bar", "1.0.0")), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -242,7 +242,7 @@ func TestPublishInvalidName(t *testing.T) {
 func TestPublishMissingVersion(t *testing.T) {
 	dir := t.TempDir()
 	// manifest without version field
-	if err := os.WriteFile(filepath.Join(dir, "agentpop.yaml"), []byte(minimalManifest("@foo/bar", "")), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "inguma.yaml"), []byte(minimalManifest("@foo/bar", "")), 0644); err != nil {
 		t.Fatal(err)
 	}
 

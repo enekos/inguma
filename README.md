@@ -1,34 +1,34 @@
-# Agentpop
+# Inguma
 
 **A package manager for AI agents.** Browse MCP servers, CLI tools, skills, and subagents; install them into Claude Code, Cursor, and other harnesses with one command. Git is the registry. Versions are reproducible.
 
 ```sh
-agentpop install @foo/bar          # latest stable
-agentpop install @foo/bar@v1.2.3   # exact version
-agentpop install --frozen          # reproduce from agentpop.lock
-agentpop upgrade                    # bump within ^major.minor
+inguma install @foo/bar          # latest stable
+inguma install @foo/bar@v1.2.3   # exact version
+inguma install --frozen          # reproduce from inguma.lock
+inguma upgrade                    # bump within ^major.minor
 ```
 
 ## Why
 
-Installing agent tools today is a mess of copy-pasted JSON blobs into config files, unversioned `npx` invocations, and no clear way to share a working setup with your team. Agentpop treats agent tools the way npm treats packages: a canonical registry, per-tool pages, reproducible installs, and a CLI that writes harness configs atomically.
+Installing agent tools today is a mess of copy-pasted JSON blobs into config files, unversioned `npx` invocations, and no clear way to share a working setup with your team. Inguma treats agent tools the way npm treats packages: a canonical registry, per-tool pages, reproducible installs, and a CLI that writes harness configs atomically.
 
-Unlike npm, Agentpop is built for agents from the start: versioned manifests, declarative permissions (coming in Track C), skill and subagent packages (Track D), and per-harness adapters that know where each harness keeps its config.
+Unlike npm, Inguma is built for agents from the start: versioned manifests, declarative permissions (coming in Track C), skill and subagent packages (Track D), and per-harness adapters that know where each harness keeps its config.
 
 ## Quick start
 
 ```sh
 # Build from source.
-git clone https://github.com/enekos/agentpop.git
-cd agentpop
+git clone https://github.com/enekos/inguma.git
+cd inguma
 make build
-sudo install -m 0755 bin/agentpop /usr/local/bin/agentpop
+sudo install -m 0755 bin/inguma /usr/local/bin/inguma
 
 # Find something.
-agentpop search github
+inguma search github
 
 # Install it.
-agentpop install @modelcontextprotocol/github
+inguma install @modelcontextprotocol/github
 ```
 
 See **[docs/getting-started.md](docs/getting-started.md)** for the 5-minute walkthrough.
@@ -39,9 +39,9 @@ See **[docs/getting-started.md](docs/getting-started.md)** for the 5-minute walk
 - **[docs/architecture.md](docs/architecture.md)** — how the system is put together
 - **[docs/cli.md](docs/cli.md)** — every subcommand
 - **[docs/api.md](docs/api.md)** — HTTP API reference
-- **[docs/manifest.md](docs/manifest.md)** — `agentpop.yaml` schema
+- **[docs/manifest.md](docs/manifest.md)** — `inguma.yaml` schema
 - **[docs/versioning.md](docs/versioning.md)** — semver + ranges + resolution
-- **[docs/lockfile.md](docs/lockfile.md)** — `agentpop.lock` and `--frozen`
+- **[docs/lockfile.md](docs/lockfile.md)** — `inguma.lock` and `--frozen`
 - **[docs/publishing.md](docs/publishing.md)** — how to publish a tool
 - **[docs/adapters.md](docs/adapters.md)** — writing a new harness adapter
 - **[docs/crawler.md](docs/crawler.md)** — how the registry becomes the corpus
@@ -52,17 +52,17 @@ See **[docs/getting-started.md](docs/getting-started.md)** for the 5-minute walk
 
 ```
 cmd/
-  agentpop/   user-facing CLI
+  inguma/   user-facing CLI
   apid/       HTTP API server
   crawler/    registry → corpus builder
 
 internal/
   versioning/ semver parse + ranges + tag scan
   namespace/  @owner/slug canonicalization
-  manifest/   agentpop.yaml parse + validate
+  manifest/   inguma.yaml parse + validate
   corpus/     on-disk layout reader + writer
   artifacts/  deterministic tarball + fs store
-  lockfile/   agentpop.lock TOML
+  lockfile/   inguma.lock TOML
   db/         SQLite (downloads + audit)
   crawl/      crawler logic + fetchers
   api/        HTTP handlers
@@ -70,7 +70,7 @@ internal/
   clicmd/     subcommand implementations
   adapters/   per-harness installers (claudecode, cursor)
   snippets/   per-harness copy-paste rendering
-  state/      ~/.agentpop/state.json
+  state/      ~/.inguma/state.json
   toolfetch/  npm/go/binary installer for kind=cli
   marrow/     thin Marrow search client
   registry/   registry/tools.yaml reader

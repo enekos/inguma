@@ -1,6 +1,6 @@
-# `agentpop.yaml` reference
+# `inguma.yaml` reference
 
-Every tool ships an `agentpop.yaml` at the root of its own repository. The crawler reads it, validates strictly, and writes a normalized `manifest.json` into the corpus.
+Every tool ships an `inguma.yaml` at the root of its own repository. The crawler reads it, validates strictly, and writes a normalized `manifest.json` into the corpus.
 
 Validation is strict: unknown top-level keys are **errors**, not warnings. This catches schema drift at registry-PR time.
 
@@ -30,7 +30,7 @@ compatibility:
 | Field | Required | Meaning |
 |-------|----------|---------|
 | `name` | ✓ | `@<gh-owner>/<slug>` or legacy bare slug. Must match the registry entry's owner. Slug is `[a-z0-9][a-z0-9-]*`. |
-| `version` | for `publish` | Semver (`1.2.3` or `1.2.3-beta.1`). Required by `agentpop publish`. |
+| `version` | for `publish` | Semver (`1.2.3` or `1.2.3-beta.1`). Required by `inguma publish`. |
 | `display_name` | ✓ | Human-readable name shown in the UI. |
 | `description` | ✓ | One-liner shown on search results. |
 | `readme` | ✓ | Path to the README file inside the repo. Indexed by Marrow. |
@@ -92,7 +92,7 @@ compatibility:
 
 ## Version rules
 
-- `version` is optional in the manifest; it's only required for `agentpop publish` which reads it to create the git tag.
+- `version` is optional in the manifest; it's only required for `inguma publish` which reads it to create the git tag.
 - The crawler treats `v<version>` git tags as releases; `version:` in the manifest is informational at ingest time.
 - Semver must be full major.minor.patch. Shorter forms are rejected.
 

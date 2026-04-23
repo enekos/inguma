@@ -1,4 +1,4 @@
-# Agentpop Core + Crawler Implementation Plan
+# Inguma Core + Crawler Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Go 1.22+, `gopkg.in/yaml.v3` (strict decoding), `github.com/google/go-cmp` (diffs in tests), stdlib `os/exec` for git and marrow, `github.com/stretchr/testify` optional for assertions.
 
-**Design spec:** `docs/superpowers/specs/2026-04-22-agentpop-marketplace-design.md`
+**Design spec:** `docs/superpowers/specs/2026-04-22-inguma-marketplace-design.md`
 
 ---
 
@@ -18,7 +18,7 @@
 - `git` on PATH
 - `marrow` on PATH (from `~/marrow`; only needed for Task 16's optional live test — the crawler itself shells out to it but tests mock it)
 
-Run all commands from the repo root: `/Users/enekosarasola/agentpop`.
+Run all commands from the repo root: `/Users/enekosarasola/inguma`.
 
 ---
 
@@ -84,9 +84,9 @@ internal/
     crawl_test.go
     testdata/
       registry.yaml
-      repos/tool-a/agentpop.yaml
+      repos/tool-a/inguma.yaml
       repos/tool-a/README.md
-      repos/tool-b/agentpop.yaml
+      repos/tool-b/inguma.yaml
       repos/tool-b/README.md
 cmd/
   crawler/
@@ -104,10 +104,10 @@ cmd/
 
 Run:
 ```bash
-go mod init github.com/enekos/agentpop
+go mod init github.com/enekos/inguma
 ```
 
-Expected: creates `go.mod` with module path `github.com/enekos/agentpop`.
+Expected: creates `go.mod` with module path `github.com/enekos/inguma`.
 
 - [ ] **Step 2: Write `.gitignore`**
 
@@ -160,11 +160,11 @@ fmt:
 
 Create `README.md`:
 ```markdown
-# Agentpop
+# Inguma
 
 Marketplace for agentic tools (MCP servers and CLI tools) compatible with multiple agent harnesses.
 
-See `docs/superpowers/specs/2026-04-22-agentpop-marketplace-design.md` for the v1 design.
+See `docs/superpowers/specs/2026-04-22-inguma-marketplace-design.md` for the v1 design.
 ```
 
 - [ ] **Step 5: Verify module builds**
@@ -334,7 +334,7 @@ const (
 	KindCLI Kind = "cli"
 )
 
-// Tool is the canonical in-memory representation of an agentpop.yaml manifest.
+// Tool is the canonical in-memory representation of an inguma.yaml manifest.
 type Tool struct {
 	Name          string        `yaml:"name"`
 	DisplayName   string        `yaml:"display_name"`
@@ -912,8 +912,8 @@ package adapters
 import (
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 type fakeAdapter struct{ id string }
@@ -974,11 +974,11 @@ Create `internal/adapters/adapter.go`:
 package adapters
 
 import (
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
-// Adapter integrates agentpop with one agent harness (e.g. Claude Code, Cursor).
+// Adapter integrates inguma with one agent harness (e.g. Claude Code, Cursor).
 type Adapter interface {
 	// ID is the stable machine identifier (e.g. "claude-code").
 	ID() string
@@ -990,7 +990,7 @@ type Adapter interface {
 	// Snippet renders copy-pasteable configuration for the given manifest.
 	// Used by the api server to populate the tool-detail page install tabs.
 	Snippet(m manifest.Tool) (snippets.Snippet, error)
-	// Install applies the tool to this harness. Used by the agentpop CLI.
+	// Install applies the tool to this harness. Used by the inguma CLI.
 	// Implementations must be reversible and atomic (write to temp + rename).
 	Install(m manifest.Tool, opts InstallOpts) error
 	// Uninstall removes the tool identified by slug from this harness.
@@ -1143,7 +1143,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func loadManifest(t *testing.T, rel string) manifest.Tool {
@@ -1230,9 +1230,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 // Adapter is the Claude Code harness integration.
@@ -1403,7 +1403,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters"
 )
 
 func TestInstall_newConfig(t *testing.T) {
@@ -1526,8 +1526,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // Install adds the tool to ~/.claude.json's mcpServers map atomically.
@@ -1694,8 +1694,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func loadManifest(t *testing.T, rel string) manifest.Tool {
@@ -1790,9 +1790,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 type Adapter struct {
@@ -1988,7 +1988,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func mustTool(t *testing.T) manifest.Tool {
@@ -2122,7 +2122,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // IndexEntry is the denormalized summary of a tool used on browse surfaces.
@@ -2245,7 +2245,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func TestReadTool(t *testing.T) {
@@ -2317,7 +2317,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // ReadTool loads corpus/<slug>/{manifest.json,index.md}.
@@ -2380,14 +2380,14 @@ git commit -m "feat(corpus): reader for ReadTool and ReadIndex"
 **Files:**
 - Create: `internal/crawl/fetcher.go`
 - Create: `internal/crawl/fetcher_test.go`
-- Create: `internal/crawl/testdata/repos/tool-a/agentpop.yaml`
+- Create: `internal/crawl/testdata/repos/tool-a/inguma.yaml`
 - Create: `internal/crawl/testdata/repos/tool-a/README.md`
-- Create: `internal/crawl/testdata/repos/tool-b/agentpop.yaml`
+- Create: `internal/crawl/testdata/repos/tool-b/inguma.yaml`
 - Create: `internal/crawl/testdata/repos/tool-b/README.md`
 
 - [ ] **Step 1: Write fixture "repos"**
 
-Create `internal/crawl/testdata/repos/tool-a/agentpop.yaml`:
+Create `internal/crawl/testdata/repos/tool-a/inguma.yaml`:
 ```yaml
 name: tool-a
 display_name: Tool A
@@ -2411,7 +2411,7 @@ Create `internal/crawl/testdata/repos/tool-a/README.md`:
 Example tool A used by crawler tests.
 ```
 
-Create `internal/crawl/testdata/repos/tool-b/agentpop.yaml`:
+Create `internal/crawl/testdata/repos/tool-b/inguma.yaml`:
 ```yaml
 name: tool-b
 display_name: Tool B
@@ -2593,7 +2593,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/corpus"
+	"github.com/enekos/inguma/internal/corpus"
 )
 
 func TestRun_happyPath(t *testing.T) {
@@ -2686,9 +2686,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/registry"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/registry"
 )
 
 // Options configures a single crawler run.
@@ -2766,7 +2766,7 @@ func processOne(opts Options, e registry.Entry) (string, corpus.IndexEntry, erro
 		return slug, corpus.IndexEntry{}, fmt.Errorf("fetch: %w", err)
 	}
 
-	mf, err := manifest.ParseFile(filepath.Join(path, "agentpop.yaml"))
+	mf, err := manifest.ParseFile(filepath.Join(path, "inguma.yaml"))
 	if err != nil {
 		return slug, corpus.IndexEntry{}, fmt.Errorf("parse manifest: %w", err)
 	}
@@ -2918,7 +2918,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/enekos/agentpop/internal/crawl"
+	"github.com/enekos/inguma/internal/crawl"
 )
 
 func main() {
@@ -2970,12 +2970,12 @@ Expected: produces `bin/crawler`.
 
 Run:
 ```bash
-rm -rf /tmp/agentpop-corpus && \
+rm -rf /tmp/inguma-corpus && \
   bin/crawler -registry internal/crawl/testdata/registry.yaml \
-              -corpus /tmp/agentpop-corpus \
+              -corpus /tmp/inguma-corpus \
               -local "$(pwd)/internal/crawl/testdata/repos" \
               -skip-marrow && \
-  ls /tmp/agentpop-corpus
+  ls /tmp/inguma-corpus
 ```
 
 Expected output contains: `_crawl.json  _index.json  tool-a  tool-b`. Exit code is `2` (because the fixture registry includes `missing-tool` intentionally, to exercise the failure path).
@@ -3008,7 +3008,7 @@ package all_test
 import (
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
+	"github.com/enekos/inguma/internal/adapters/all"
 )
 
 func TestDefault(t *testing.T) {
@@ -3038,14 +3038,14 @@ Expected: FAIL — package does not exist.
 
 Create `internal/adapters/all/all.go`:
 ```go
-// Package all assembles the set of adapters shipped in agentpop v1.
+// Package all assembles the set of adapters shipped in inguma v1.
 // Out-of-tree adapters should construct their own *adapters.Registry directly.
 package all
 
 import (
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/adapters/claudecode"
-	"github.com/enekos/agentpop/internal/adapters/cursor"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters/claudecode"
+	"github.com/enekos/inguma/internal/adapters/cursor"
 )
 
 // Default returns a Registry preloaded with the v1 adapters.
@@ -3129,6 +3129,6 @@ Expected: compiles, all tests pass, and `bin/crawler -h` prints the flags define
 
 - `cmd/apid` — the HTTP API server. Plan 2.
 - Svelte frontend. Plan 3.
-- `cmd/agentpop` — user-facing CLI. Plan 4.
+- `cmd/inguma` — user-facing CLI. Plan 4.
 - GitHub stars / trending ranking in `_index.json`. Fast-follow within plan 2.
 - `GET /api/install/:slug` endpoint. Plan 2 (consumes `adapters.Default()` and each adapter's `Snippet`).

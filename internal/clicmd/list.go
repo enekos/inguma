@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/enekos/agentpop/internal/state"
+	"github.com/enekos/inguma/internal/state"
 )
 
 // ListDeps bundles deps for List.

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/corpus"
+	"github.com/enekos/inguma/internal/corpus"
 )
 
 func seedVersionedCorpus(t *testing.T) string {

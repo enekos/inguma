@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/corpus"
+	"github.com/enekos/inguma/internal/corpus"
 )
 
 func TestRun_happyPath(t *testing.T) {

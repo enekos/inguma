@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func mustTool(t *testing.T) manifest.Tool {

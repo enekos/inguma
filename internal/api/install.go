@@ -6,8 +6,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 type installResponse struct {
@@ -21,7 +21,7 @@ type cliBlock struct {
 }
 
 // handleInstall returns everything the frontend needs to render the install tabs:
-// the canonical agentpop CLI one-liner and a per-harness snippet for every
+// the canonical inguma CLI one-liner and a per-harness snippet for every
 // registered adapter, in deterministic order.
 func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
@@ -53,7 +53,7 @@ func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, installResponse{
 		Slug:     slug,
-		CLI:      cliBlock{Command: "agentpop install " + slug},
+		CLI:      cliBlock{Command: "inguma install " + slug},
 		Snippets: out,
 	})
 }

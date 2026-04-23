@@ -27,7 +27,7 @@ func TestRoundTrip(t *testing.T) {
 }
 
 func TestReadFromFile(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "agentpop.lock")
+	path := filepath.Join(t.TempDir(), "inguma.lock")
 	os.WriteFile(path, []byte("schema = 1\n\n[[packages]]\nslug = \"@foo/bar\"\nversion = \"v1.0.0\"\nsha256 = \"x\"\nsource_repo = \"r\"\nsource_ref = \"refs/tags/v1.0.0\"\ninstalled_at = \"t\"\nkind = \"mcp\"\n"), 0o644)
 	l, err := ReadFile(path)
 	if err != nil {
@@ -39,7 +39,7 @@ func TestReadFromFile(t *testing.T) {
 }
 
 func TestWriteFile(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "agentpop.lock")
+	path := filepath.Join(t.TempDir(), "inguma.lock")
 	l := &Lock{Schema: 1, Packages: []Entry{{Slug: "@foo/bar", Version: "v1.0.0", SHA256: "x", SourceRepo: "r", SourceRef: "ref", InstalledAt: "t", Kind: "mcp"}}}
 	if err := WriteFile(path, l); err != nil {
 		t.Fatal(err)

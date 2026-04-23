@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
+	"github.com/enekos/inguma/internal/adapters"
 )
 
 func TestInstall_newConfig(t *testing.T) {

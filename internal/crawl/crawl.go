@@ -9,9 +9,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/registry"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/registry"
 )
 
 // Options configures a single crawler run.
@@ -89,7 +89,7 @@ func processOne(opts Options, e registry.Entry) (string, corpus.IndexEntry, erro
 		return slug, corpus.IndexEntry{}, fmt.Errorf("fetch: %w", err)
 	}
 
-	mf, err := manifest.ParseFile(filepath.Join(path, "agentpop.yaml"))
+	mf, err := manifest.ParseFile(filepath.Join(path, "inguma.yaml"))
 	if err != nil {
 		return slug, corpus.IndexEntry{}, fmt.Errorf("parse manifest: %w", err)
 	}

@@ -7,23 +7,23 @@ This walks through installing the CLI, finding a tool, and installing it into Cl
 From source (the only distribution channel until v2.x ships binaries):
 
 ```sh
-git clone https://github.com/enekos/agentpop.git
-cd agentpop
+git clone https://github.com/enekos/inguma.git
+cd inguma
 make build
-sudo install -m 0755 bin/agentpop /usr/local/bin/agentpop
+sudo install -m 0755 bin/inguma /usr/local/bin/inguma
 ```
 
 Verify:
 
 ```sh
-agentpop --help
+inguma --help
 ```
 
 ## Find a tool
 
 ```sh
-agentpop search "github"
-agentpop show @modelcontextprotocol/github
+inguma search "github"
+inguma show @modelcontextprotocol/github
 ```
 
 `show` prints the tool's manifest and per-harness install snippets — useful if you want to copy-paste without running `install`.
@@ -33,24 +33,24 @@ agentpop show @modelcontextprotocol/github
 `install` detects which supported harnesses are present on your system and writes to each one's native config file. By default it asks for confirmation.
 
 ```sh
-agentpop install @modelcontextprotocol/github
+inguma install @modelcontextprotocol/github
 ```
 
 Pin a specific version or a semver range:
 
 ```sh
-agentpop install @modelcontextprotocol/github@v1.2.3
-agentpop install @modelcontextprotocol/github --range "^1.2"
+inguma install @modelcontextprotocol/github@v1.2.3
+inguma install @modelcontextprotocol/github --range "^1.2"
 ```
 
-After the install succeeds, Agentpop writes `agentpop.lock` in the current directory. Commit it — it makes future installs reproducible.
+After the install succeeds, Inguma writes `inguma.lock` in the current directory. Commit it — it makes future installs reproducible.
 
 ## Reproduce someone else's install
 
-If a repo ships an `agentpop.lock`, check it out and run:
+If a repo ships an `inguma.lock`, check it out and run:
 
 ```sh
-agentpop install --frozen
+inguma install --frozen
 ```
 
 `--frozen` installs every entry at the exact version + SHA in the lockfile. It refuses to resolve anything not pinned. Use this in CI.
@@ -58,13 +58,13 @@ agentpop install --frozen
 ## Upgrade
 
 ```sh
-agentpop upgrade                      # every entry, bump within ^major.minor
-agentpop upgrade @modelcontextprotocol/github
-agentpop upgrade --dry-run            # preview without applying
+inguma upgrade                      # every entry, bump within ^major.minor
+inguma upgrade @modelcontextprotocol/github
+inguma upgrade --dry-run            # preview without applying
 ```
 
 ## What now?
 
-- **Install more tools:** `agentpop search <query>` and browse the [marketplace](https://agentpop.dev).
+- **Install more tools:** `inguma search <query>` and browse the [marketplace](https://inguma.dev).
 - **Publish your own tool:** see [publishing](publishing.md).
 - **Understand what's happening under the hood:** see [architecture](architecture.md).

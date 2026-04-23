@@ -6,7 +6,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 // SearchDeps bundles deps for Search.
@@ -15,7 +15,7 @@ type SearchDeps struct {
 	Stdout io.Writer
 }
 
-// SearchArgs are the flags for `agentpop search`.
+// SearchArgs are the flags for `inguma search`.
 type SearchArgs struct {
 	Query string
 	Kind  string

@@ -1,9 +1,9 @@
-.PHONY: build test vet fmt lint dev test-e2e crawl-local crawler apid agentpop
+.PHONY: build test vet fmt lint dev test-e2e crawl-local crawler apid inguma
 
 GO := go
 BIN := bin
 
-build: crawler apid agentpop
+build: crawler apid inguma
 
 dev:
 	@scripts/dev.sh
@@ -33,5 +33,5 @@ lint:
 apid:
 	$(GO) build -o $(BIN)/apid ./cmd/apid
 
-agentpop:
-	$(GO) build -o $(BIN)/agentpop ./cmd/agentpop
+inguma:
+	$(GO) build -o $(BIN)/inguma ./cmd/inguma

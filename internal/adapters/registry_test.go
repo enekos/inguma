@@ -3,8 +3,8 @@ package adapters
 import (
 	"testing"
 
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 type fakeAdapter struct{ id string }

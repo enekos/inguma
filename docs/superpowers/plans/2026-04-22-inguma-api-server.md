@@ -1,4 +1,4 @@
-# Agentpop API Server Implementation Plan
+# Inguma API Server Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Go 1.22+, `net/http`, `encoding/json`, stdlib `net/http/httptest` for tests. No router dependency — `http.ServeMux` with the Go 1.22 pattern syntax (`GET /api/tools/{slug}`) is sufficient.
 
-**Design spec:** `docs/superpowers/specs/2026-04-22-agentpop-marketplace-design.md`
+**Design spec:** `docs/superpowers/specs/2026-04-22-inguma-marketplace-design.md`
 **Depends on:** plan 1 (`internal/{manifest,corpus,adapters,snippets}`) must be merged to master.
 
 ---
@@ -314,8 +314,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/adapters/all"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 // fakeMarrow is a no-op Marrow client used in unit tests that don't hit search.
@@ -390,7 +390,7 @@ go test ./internal/api/...
 
 Create `internal/api/server.go`:
 ```go
-// Package api serves agentpop's read-only HTTP API.
+// Package api serves inguma's read-only HTTP API.
 //
 // The server is a thin layer over the on-disk corpus (written by cmd/crawler)
 // and a Marrow search client. It holds no user state.
@@ -401,8 +401,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 // MarrowSearcher is the subset of marrow.Client the server needs.
@@ -600,8 +600,8 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 // slugRe intentionally matches the manifest slug regex, so a valid tool slug
@@ -764,7 +764,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/enekos/agentpop/internal/corpus"
+	"github.com/enekos/inguma/internal/corpus"
 )
 
 type categoryCount struct {
@@ -941,7 +941,7 @@ func TestInstall_returnsSnippetPerAdapter(t *testing.T) {
 	if parsed.Slug != "tool-a" {
 		t.Errorf("slug = %q", parsed.Slug)
 	}
-	if parsed.CLI.Command != "agentpop install tool-a" {
+	if parsed.CLI.Command != "inguma install tool-a" {
 		t.Errorf("cli.command = %q", parsed.CLI.Command)
 	}
 	// all.Default() registers claude-code + cursor
@@ -980,8 +980,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 type installResponse struct {
@@ -995,7 +995,7 @@ type cliBlock struct {
 }
 
 // handleInstall returns everything the frontend needs to render the install tabs:
-// the canonical agentpop CLI one-liner and a per-harness snippet for every
+// the canonical inguma CLI one-liner and a per-harness snippet for every
 // registered adapter, in deterministic order.
 func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
@@ -1027,7 +1027,7 @@ func (s *Server) handleInstall(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, installResponse{
 		Slug:     slug,
-		CLI:      cliBlock{Command: "agentpop install " + slug},
+		CLI:      cliBlock{Command: "inguma install " + slug},
 		Snippets: out,
 	})
 }
@@ -1078,7 +1078,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 type stubMarrow struct {
@@ -1167,8 +1167,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 type searchHit struct {
@@ -1283,7 +1283,7 @@ git commit -m "feat(api): /api/search proxying Marrow with structured filters"
 
 Create `cmd/apid/main.go`:
 ```go
-// Command apid is agentpop's HTTP API server.
+// Command apid is inguma's HTTP API server.
 //
 // Usage:
 //
@@ -1297,9 +1297,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
-	"github.com/enekos/agentpop/internal/api"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/adapters/all"
+	"github.com/enekos/inguma/internal/api"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 func main() {
@@ -1430,7 +1430,7 @@ git diff --cached --quiet || git commit -m "chore: go mod tidy and gofmt"
 
 ## Out of scope (deferred to later plans)
 
-- `cmd/agentpop` CLI — plan 3.
+- `cmd/inguma` CLI — plan 3.
 - Svelte frontend — plan 4.
 - Caching / rate limiting / CORS on the api server — fast-follow once the frontend is up.
 - Auth or per-user state — explicitly not in v1.

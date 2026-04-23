@@ -1,4 +1,4 @@
-// Package lockfile owns the agentpop.lock TOML format: per-install-target
+// Package lockfile owns the inguma.lock TOML format: per-install-target
 // pinning of resolved_version + sha256 for reproducible installs.
 package lockfile
 

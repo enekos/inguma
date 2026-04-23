@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# End-to-end smoke for Agentpop v2 Track A.
-# Builds apid + agentpop, seeds a fixture corpus with two versions of
+# End-to-end smoke for Inguma v2 Track A.
+# Builds apid + inguma, seeds a fixture corpus with two versions of
 # @foo/bar, and exercises install + --frozen + upgrade against a real apid.
 set -euo pipefail
 
@@ -20,7 +20,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Isolate state.DefaultPath() which uses $HOME/.agentpop/state.json.
+# Isolate state.DefaultPath() which uses $HOME/.inguma/state.json.
 # Keep Go's module cache on the real filesystem so cleanup can delete $TMP.
 export HOME="$TMP/home"
 mkdir -p "$HOME"
@@ -59,18 +59,18 @@ fi
 cd "$TMP"
 
 echo "== install latest =="
-"$ROOT/bin/agentpop" install --api http://127.0.0.1:18091 @foo/bar -y \
+"$ROOT/bin/inguma" install --api http://127.0.0.1:18091 @foo/bar -y \
     || { echo "install failed"; cat "$TMP/apid.log"; exit 1; }
-grep -q '@foo/bar' agentpop.lock
-grep -q 'v1.1.0' agentpop.lock
+grep -q '@foo/bar' inguma.lock
+grep -q 'v1.1.0' inguma.lock
 echo "  lockfile OK"
 
 echo "== install --frozen succeeds =="
-"$ROOT/bin/agentpop" install --api http://127.0.0.1:18091 --frozen @foo/bar -y \
+"$ROOT/bin/inguma" install --api http://127.0.0.1:18091 --frozen @foo/bar -y \
     || { echo "frozen install failed"; exit 1; }
 
 echo "== upgrade is a no-op (already latest) =="
-"$ROOT/bin/agentpop" upgrade --api http://127.0.0.1:18091 @foo/bar 2>&1 | tee "$TMP/upgrade.log"
+"$ROOT/bin/inguma" upgrade --api http://127.0.0.1:18091 @foo/bar 2>&1 | tee "$TMP/upgrade.log"
 grep -q "up to date" "$TMP/upgrade.log"
 
 echo ""

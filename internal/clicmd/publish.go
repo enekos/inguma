@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/namespace"
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/namespace"
+	"github.com/enekos/inguma/internal/versioning"
 )
 
 // PublishDeps bundles injectable dependencies for Publish.
@@ -29,14 +29,14 @@ type PublishDeps struct {
 	Now func() time.Time
 }
 
-// PublishArgs are the args for `agentpop publish`.
+// PublishArgs are the args for `inguma publish`.
 type PublishArgs struct {
 	RepoDir string        // defaults to cwd
 	Timeout time.Duration // defaults to 10m
 	Remote  string        // defaults to "origin"
 }
 
-// Publish reads agentpop.yaml, tags v<version>, pushes the tag, and polls
+// Publish reads inguma.yaml, tags v<version>, pushes the tag, and polls
 // /api/tools/@owner/slug/@vX.Y.Z until it returns 200 (or times out).
 func Publish(ctx context.Context, d PublishDeps, a PublishArgs) error {
 	if d.Git == nil {
@@ -62,13 +62,13 @@ func Publish(ctx context.Context, d PublishDeps, a PublishArgs) error {
 	}
 
 	// 1. Read manifest.
-	manifestPath := filepath.Join(repoDir, "agentpop.yaml")
+	manifestPath := filepath.Join(repoDir, "inguma.yaml")
 	m, err := manifest.ParseFile(manifestPath)
 	if err != nil {
 		return fmt.Errorf("publish: read manifest %s: %w", manifestPath, err)
 	}
 	if m.Version == "" {
-		return errors.New("publish: agentpop.yaml must declare top-level version: \"X.Y.Z\"")
+		return errors.New("publish: inguma.yaml must declare top-level version: \"X.Y.Z\"")
 	}
 	v, err := versioning.ParseVersion(m.Version)
 	if err != nil {

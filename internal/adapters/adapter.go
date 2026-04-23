@@ -3,11 +3,11 @@
 package adapters
 
 import (
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
-// Adapter integrates agentpop with one agent harness (e.g. Claude Code, Cursor).
+// Adapter integrates inguma with one agent harness (e.g. Claude Code, Cursor).
 type Adapter interface {
 	// ID is the stable machine identifier (e.g. "claude-code").
 	ID() string
@@ -19,7 +19,7 @@ type Adapter interface {
 	// Snippet renders copy-pasteable configuration for the given manifest.
 	// Used by the api server to populate the tool-detail page install tabs.
 	Snippet(m manifest.Tool) (snippets.Snippet, error)
-	// Install applies the tool to this harness. Used by the agentpop CLI.
+	// Install applies the tool to this harness. Used by the inguma CLI.
 	// Implementations must be reversible and atomic (write to temp + rename).
 	Install(m manifest.Tool, opts InstallOpts) error
 	// Uninstall removes the tool identified by slug from this harness.

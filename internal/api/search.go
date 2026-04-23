@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 type searchHit struct {

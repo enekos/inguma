@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/lockfile"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/lockfile"
 )
 
 // newUpgradeDeps constructs UpgradeDeps from a test server, reusing the
@@ -39,7 +39,7 @@ func TestUpgradeBumpsVersion(t *testing.T) {
 	lk := &lockfile.Lock{Schema: 1, Packages: []lockfile.Entry{
 		{Slug: "@foo/bar", Version: "v1.0.0", SHA256: "oldhash", Kind: "mcp"},
 	}}
-	if err := lockfile.WriteFile(filepath.Join(tmpDir, "agentpop.lock"), lk); err != nil {
+	if err := lockfile.WriteFile(filepath.Join(tmpDir, "inguma.lock"), lk); err != nil {
 		t.Fatal(err)
 	}
 
@@ -58,7 +58,7 @@ func TestUpgradeBumpsVersion(t *testing.T) {
 	}
 
 	// Lockfile should now contain v1.1.0.
-	updated, err := lockfile.ReadFile(filepath.Join(tmpDir, "agentpop.lock"))
+	updated, err := lockfile.ReadFile(filepath.Join(tmpDir, "inguma.lock"))
 	if err != nil {
 		t.Fatalf("read updated lockfile: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestUpgradeUpToDate(t *testing.T) {
 	lk := &lockfile.Lock{Schema: 1, Packages: []lockfile.Entry{
 		{Slug: "@foo/bar", Version: "v1.1.0", SHA256: "abc123sha", Kind: "mcp"},
 	}}
-	if err := lockfile.WriteFile(filepath.Join(tmpDir, "agentpop.lock"), lk); err != nil {
+	if err := lockfile.WriteFile(filepath.Join(tmpDir, "inguma.lock"), lk); err != nil {
 		t.Fatal(err)
 	}
 
@@ -114,7 +114,7 @@ func TestUpgradeUpToDate(t *testing.T) {
 	}
 
 	// Lockfile should be unchanged.
-	unchanged, err := lockfile.ReadFile(filepath.Join(tmpDir, "agentpop.lock"))
+	unchanged, err := lockfile.ReadFile(filepath.Join(tmpDir, "inguma.lock"))
 	if err != nil {
 		t.Fatalf("read lockfile: %v", err)
 	}
@@ -134,7 +134,7 @@ func TestUpgradeMissingSlug(t *testing.T) {
 	lk := &lockfile.Lock{Schema: 1, Packages: []lockfile.Entry{
 		{Slug: "@foo/bar", Version: "v1.0.0", SHA256: "abc", Kind: "mcp"},
 	}}
-	if err := lockfile.WriteFile(filepath.Join(tmpDir, "agentpop.lock"), lk); err != nil {
+	if err := lockfile.WriteFile(filepath.Join(tmpDir, "inguma.lock"), lk); err != nil {
 		t.Fatal(err)
 	}
 

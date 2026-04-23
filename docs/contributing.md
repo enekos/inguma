@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for looking. Agentpop is early; there's plenty to do.
+Thanks for looking. Inguma is early; there's plenty to do.
 
 ## Submitting a tool to the marketplace
 
@@ -18,8 +18,8 @@ Not a code contribution — just a registry PR. See [publishing](publishing.md).
 ### Build + test
 
 ```sh
-git clone https://github.com/enekos/agentpop.git
-cd agentpop
+git clone https://github.com/enekos/inguma.git
+cd inguma
 make build           # binaries land in bin/
 make test            # Go unit tests
 make vet lint        # static analysis
@@ -62,9 +62,9 @@ See [architecture](architecture.md#repository-layout). Rules of thumb:
 Example:
 
 ```
-feat(lockfile): read/write agentpop.lock with CheckFrozen
+feat(lockfile): read/write inguma.lock with CheckFrozen
 
-Introduces the TOML lockfile format used by `agentpop install` to pin
+Introduces the TOML lockfile format used by `inguma install` to pin
 version + SHA per install target. CheckFrozen lets --frozen refuse to
 resolve anything not in the lockfile.
 ```
@@ -89,7 +89,7 @@ make build
 # Point the crawler at a local 'registry' of test tool repos.
 mkdir -p /tmp/ap-repos
 # (put tool repo directories under /tmp/ap-repos/, each containing
-#  agentpop.yaml and README.md)
+#  inguma.yaml and README.md)
 
 bin/crawler \
     -registry /tmp/ap-registry.yaml \
@@ -107,7 +107,7 @@ bin/apid \
     -addr :18091
 
 # Install from it.
-bin/agentpop install --api http://127.0.0.1:18091 @foo/bar
+bin/inguma install --api http://127.0.0.1:18091 @foo/bar
 ```
 
 Or just run `bash scripts/e2e-track-a.sh` — that does the same end-to-end in one shot.

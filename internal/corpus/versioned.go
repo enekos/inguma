@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/versioning"
 )
 
 // VersionedEntry is the input to WriteVersion. The caller is responsible

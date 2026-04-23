@@ -8,7 +8,7 @@ const (
 	KindCLI Kind = "cli"
 )
 
-// Tool is the canonical in-memory representation of an agentpop.yaml manifest.
+// Tool is the canonical in-memory representation of an inguma.yaml manifest.
 type Tool struct {
 	Name          string        `yaml:"name" json:"name"`
 	Version       string        `yaml:"version,omitempty" json:"version,omitempty"`

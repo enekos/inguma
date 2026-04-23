@@ -1,4 +1,4 @@
-// Package versioning wraps golang.org/x/mod/semver with agentpop-specific
+// Package versioning wraps golang.org/x/mod/semver with inguma-specific
 // rules: require full major.minor.patch, normalize to canonical "vX.Y.Z",
 // surface prerelease as a first-class property.
 package versioning

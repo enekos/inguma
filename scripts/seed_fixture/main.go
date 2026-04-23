@@ -8,9 +8,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/enekos/agentpop/internal/artifacts"
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
+	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
 )
 
 func main() {

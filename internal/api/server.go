@@ -1,4 +1,4 @@
-// Package api serves agentpop's read-only HTTP API.
+// Package api serves inguma's read-only HTTP API.
 //
 // The server is a thin layer over the on-disk corpus (written by cmd/crawler)
 // and a Marrow search client. It holds no user state.
@@ -9,10 +9,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/artifacts"
-	"github.com/enekos/agentpop/internal/db"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/db"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 // MarrowSearcher is the subset of marrow.Client the server needs.

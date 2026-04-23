@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/enekos/agentpop/internal/apiclient"
+	"github.com/enekos/inguma/internal/apiclient"
 )
 
 // ShowDeps bundles deps for Show.
@@ -14,7 +14,7 @@ type ShowDeps struct {
 	Stdout io.Writer
 }
 
-// ShowArgs are the args for `agentpop show`.
+// ShowArgs are the args for `inguma show`.
 type ShowArgs struct {
 	Slug string
 }

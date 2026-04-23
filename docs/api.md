@@ -2,7 +2,7 @@
 
 apid is the read-only HTTP server. It reads the on-disk corpus + artifact store and proxies search to Marrow. No authentication in v2.
 
-Base URL in production: `https://agentpop.dev`. Local dev: `http://localhost:8090` or whatever `-addr` says.
+Base URL in production: `https://inguma.dev`. Local dev: `http://localhost:8090` or whatever `-addr` says.
 
 All errors use this JSON shape:
 
@@ -29,7 +29,7 @@ Returns the latest-version metadata.
   "latest_version": "v1.2.3",
   "version": "v1.2.3",
   "versions": ["v1.0.0", "v1.1.0", "v1.2.3"],
-  "manifest": { ...parsed agentpop.yaml... },
+  "manifest": { ...parsed inguma.yaml... },
   "readme": "# bar\n..."
 }
 ```
@@ -65,7 +65,7 @@ Response headers:
 ```
 Content-Type: application/gzip
 Cache-Control: public, max-age=31536000, immutable
-X-Agentpop-SHA256: <hex sha256 of the tarball>
+X-Inguma-SHA256: <hex sha256 of the tarball>
 ```
 
 Server bumps a per-day download counter in SQLite as a side effect. Errors with 503 `no_store` if apid was started without `-artifacts`.
@@ -82,7 +82,7 @@ Resolves a range (or latest stable if empty) against the on-disk versions for `@
   "slug": "bar",
   "resolved_version": "v1.2.3",
   "sha256": "...",
-  "cli": { "command": "agentpop install @foo/bar@v1.2.3" },
+  "cli": { "command": "inguma install @foo/bar@v1.2.3" },
   "snippets": [
     {
       "harness_id": "claude-code",
@@ -155,9 +155,9 @@ Controlled-vocabulary list with counts.
 ```
 apid \
     -addr :8090 \
-    -corpus /var/lib/agentpop/corpus \
-    -artifacts /var/lib/agentpop/artifacts \
-    -sqlite /var/lib/agentpop/agentpop.sqlite \
+    -corpus /var/lib/inguma/corpus \
+    -artifacts /var/lib/inguma/artifacts \
+    -sqlite /var/lib/inguma/inguma.sqlite \
     -marrow http://localhost:8080
 ```
 
@@ -166,7 +166,7 @@ apid \
 | `-addr` | `:8090` | Listen address |
 | `-corpus` | `corpus` | Corpus directory |
 | `-artifacts` | `./artifacts` | Artifact store root |
-| `-sqlite` | `./agentpop.sqlite` | SQLite path (downloads + audit) |
+| `-sqlite` | `./inguma.sqlite` | SQLite path (downloads + audit) |
 | `-marrow` | `http://localhost:8080` | Marrow service URL |
 
 Graceful shutdown on SIGINT/SIGTERM with a 5-second drain.

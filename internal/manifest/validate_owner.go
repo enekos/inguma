@@ -3,7 +3,7 @@ package manifest
 import (
 	"fmt"
 
-	"github.com/enekos/agentpop/internal/namespace"
+	"github.com/enekos/inguma/internal/namespace"
 )
 
 // ValidateWithOwner performs base Validate plus namespace consistency:

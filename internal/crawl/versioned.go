@@ -9,12 +9,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/enekos/agentpop/internal/artifacts"
-	"github.com/enekos/agentpop/internal/corpus"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/namespace"
-	"github.com/enekos/agentpop/internal/registry"
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/corpus"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/namespace"
+	"github.com/enekos/inguma/internal/registry"
+	"github.com/enekos/inguma/internal/versioning"
 
 	"gopkg.in/yaml.v3"
 )
@@ -137,7 +137,7 @@ func ingestVersion(opts VersionedOptions, log *slog.Logger, store artifacts.Stor
 		return fmt.Errorf("fetch %s@%s: %w", e.Repo, canonical, err)
 	}
 
-	mf, err := manifest.ParseFile(filepath.Join(path, "agentpop.yaml"))
+	mf, err := manifest.ParseFile(filepath.Join(path, "inguma.yaml"))
 	if err != nil {
 		return fmt.Errorf("parse manifest: %w", err)
 	}
@@ -204,7 +204,7 @@ func ingestSynthetic(opts VersionedOptions, log *slog.Logger, entry registry.Ent
 	if err != nil {
 		return false, fmt.Errorf("fetch %s@%s: %w", entry.Repo, entry.Ref, err)
 	}
-	mf, err := manifest.ParseFile(filepath.Join(repoPath, "agentpop.yaml"))
+	mf, err := manifest.ParseFile(filepath.Join(repoPath, "inguma.yaml"))
 	if err != nil {
 		return false, fmt.Errorf("parse manifest: %w", err)
 	}

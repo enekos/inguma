@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/enekos/agentpop/internal/artifacts"
-	"github.com/enekos/agentpop/internal/db"
+	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/db"
 )
 
 func TestGetArtifact(t *testing.T) {
@@ -36,7 +36,7 @@ func TestGetArtifact(t *testing.T) {
 	if rec.Header().Get("Content-Type") != "application/gzip" {
 		t.Fatalf("ct=%s", rec.Header().Get("Content-Type"))
 	}
-	if rec.Header().Get("X-Agentpop-SHA256") == "" {
+	if rec.Header().Get("X-Inguma-SHA256") == "" {
 		t.Fatal("missing sha header")
 	}
 	if !bytes.Equal(rec.Body.Bytes(), body) {

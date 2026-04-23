@@ -1,13 +1,13 @@
 # Roadmap
 
-Agentpop is being built as a sequence of independently shippable tracks. Each has its own design spec under `docs/superpowers/specs/` and implementation plan under `docs/superpowers/plans/`.
+Inguma is being built as a sequence of independently shippable tracks. Each has its own design spec under `docs/superpowers/specs/` and implementation plan under `docs/superpowers/plans/`.
 
 ## Shipped
 
 ### v1 — Curated marketplace + CLI installer
 
 - Read-only marketplace, curated by registry PR.
-- `agentpop install <slug>` for bare-slug v1 tools.
+- `inguma install <slug>` for bare-slug v1 tools.
 - Adapters for Claude Code and Cursor.
 - SvelteKit website with search (Marrow), category grid, tool detail pages.
 - No accounts, no versioning beyond git refs, no publishing flow.
@@ -18,8 +18,8 @@ Agentpop is being built as a sequence of independently shippable tracks. Each ha
 - Strict semver: tags must be `v<major>.<minor>.<patch>`.
 - Immutable per-version manifest-snapshot tarballs stored under `artifacts/`.
 - Versioned corpus layout `corpus/<owner>/<slug>/versions/<v>/`.
-- `agentpop.lock` TOML with `--frozen` for reproducible installs.
-- `agentpop install/upgrade/publish` — version-aware.
+- `inguma.lock` TOML with `--frozen` for reproducible installs.
+- `inguma install/upgrade/publish` — version-aware.
 - `/api/tools/@owner/slug[/@version]`, `/api/artifacts/...` streaming, `/api/install/...` with range support.
 - 301 redirect for bare-slug routes.
 - Synthetic `v0.0.0` fallback for untagged repos.
@@ -33,20 +33,20 @@ Agentpop is being built as a sequence of independently shippable tracks. Each ha
 - GitHub OAuth only (no passwords, no email/password).
 - Namespaces derived from GitHub orgs/users.
 - `manage:@owner` scope granted via `read:org` membership check.
-- `agentpop login / whoami / logout` device-flow auth.
-- `agentpop yank @x/y@v1.2.3` marks a version yanked (warns on install).
-- `agentpop deprecate @x/y --message "…"` whole-package deprecation.
+- `inguma login / whoami / logout` device-flow auth.
+- `inguma yank @x/y@v1.2.3` marks a version yanked (warns on install).
+- `inguma deprecate @x/y --message "…"` whole-package deprecation.
 - `/u/<gh-login>` auto-generated publisher dashboards.
 - Self-serve publishing after the first registry PR: subsequent tags auto-ingest.
 - Redirect table on owner transfer.
 
 ### v2 Track C — Trust layer: permissions + sigstore + advisories
 
-- `permissions:` block in `agentpop.yaml` declaring network / filesystem / env / exec / secrets scope.
+- `permissions:` block in `inguma.yaml` declaring network / filesystem / env / exec / secrets scope.
 - Install-time consent prompt listing declared permissions before applying.
 - Sigstore keyless signing driven by GitHub Actions OIDC; verified provenance badges.
-- `agentpop audit` reads the lockfile, queries advisories, exits nonzero on high-severity hits.
-- `agentpop advisory publish` (admin) for publishing advisories.
+- `inguma audit` reads the lockfile, queries advisories, exits nonzero on high-severity hits.
+- `inguma advisory publish` (admin) for publishing advisories.
 - Three trust tiers displayed on tool pages: verified / unsigned / unverified.
 - Takedown (`withdraw`) refuses to serve the artifact.
 
@@ -56,7 +56,7 @@ Agentpop is being built as a sequence of independently shippable tracks. Each ha
 - `skill`: markdown + frontmatter + reference files (Superpowers-style).
 - `subagent`: Claude Code subagent definition with tools/model frontmatter.
 - `command`: slash command.
-- `bundle`: a flat set of other packages + env defaults; `agentpop install @team/workflow-bundle` pulls them all.
+- `bundle`: a flat set of other packages + env defaults; `inguma install @team/workflow-bundle` pulls them all.
 - Permissions block applies uniformly across kinds.
 - Adapters grow `SupportsKind(Kind) bool` + compatibility matrix.
 

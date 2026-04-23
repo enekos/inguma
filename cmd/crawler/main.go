@@ -12,7 +12,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/enekos/agentpop/internal/crawl"
+	"github.com/enekos/inguma/internal/crawl"
 )
 
 func main() {

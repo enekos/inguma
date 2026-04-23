@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/snippets"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/snippets"
 )
 
 type Adapter struct {

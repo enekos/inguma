@@ -1,4 +1,4 @@
-// Command apid is agentpop's HTTP API server.
+// Command apid is inguma's HTTP API server.
 //
 // Usage:
 //
@@ -15,18 +15,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters/all"
-	"github.com/enekos/agentpop/internal/api"
-	"github.com/enekos/agentpop/internal/artifacts"
-	"github.com/enekos/agentpop/internal/db"
-	"github.com/enekos/agentpop/internal/marrow"
+	"github.com/enekos/inguma/internal/adapters/all"
+	"github.com/enekos/inguma/internal/api"
+	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/db"
+	"github.com/enekos/inguma/internal/marrow"
 )
 
 func main() {
 	addr := flag.String("addr", ":8090", "listen address")
 	corpus := flag.String("corpus", "corpus", "path to corpus directory")
 	marrowURL := flag.String("marrow", "http://localhost:8080", "Marrow service base URL")
-	sqlite := flag.String("sqlite", "./agentpop.sqlite", "path to SQLite database file")
+	sqlite := flag.String("sqlite", "./inguma.sqlite", "path to SQLite database file")
 	artifactsDir := flag.String("artifacts", "./artifacts", "path to artifacts directory")
 	flag.Parse()
 

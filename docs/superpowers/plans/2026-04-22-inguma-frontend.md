@@ -1,4 +1,4 @@
-# Agentpop Frontend Implementation Plan
+# Inguma Frontend Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node 22, SvelteKit (latest), TypeScript, Tailwind CSS v4, Playwright for smoke tests, Vite (built into SvelteKit).
 
-**Design spec:** `docs/superpowers/specs/2026-04-22-agentpop-marketplace-design.md`
+**Design spec:** `docs/superpowers/specs/2026-04-22-inguma-marketplace-design.md`
 **Depends on:** plans 1–3 merged (the frontend talks to `apid`).
 
 ---
@@ -170,7 +170,7 @@ Open repo-root `.gitignore` and add if missing:
 - [ ] **Step 8: Commit**
 
 ```bash
-cd /Users/enekosarasola/agentpop
+cd /Users/enekosarasola/inguma
 git add web .gitignore
 git commit -m "chore(web): scaffold SvelteKit + Tailwind"
 ```
@@ -282,7 +282,7 @@ function baseURL(): string {
   // In production the frontend is proxied by Caddy so /api/* is same-origin.
   // In dev we fall back to localhost:8091 (where `bin/apid` runs).
   if (typeof window !== 'undefined') return '';
-  return process.env.AGENTPOP_API_URL ?? DEFAULT_BASE;
+  return process.env.INGUMA_API_URL ?? DEFAULT_BASE;
 }
 
 async function getJSON<T>(fetchFn: Fetch, path: string): Promise<T> {
@@ -342,7 +342,7 @@ export async function search(
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/enekosarasola/agentpop
+cd /Users/enekosarasola/inguma
 git add web/src/lib
 git commit -m "feat(web): typed API client"
 ```
@@ -366,7 +366,7 @@ Create `web/src/lib/components/Nav.svelte`:
 
 <nav class="border-b border-neutral-200 dark:border-neutral-800">
   <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-    <a href="/" class="text-lg font-semibold">agentpop</a>
+    <a href="/" class="text-lg font-semibold">inguma</a>
     <div class="flex gap-4 text-sm text-neutral-600 dark:text-neutral-400">
       <a href="/search" class="hover:underline">Search</a>
       <a href="/docs" class="hover:underline">Docs</a>
@@ -559,7 +559,7 @@ In terminal 1 (from repo root):
 bin/apid -addr :8091 -corpus internal/api/testdata/corpus -marrow http://127.0.0.1:1 &
 APID=$!
 sleep 1
-cd web && AGENTPOP_API_URL=http://localhost:8091 npm run dev -- --port 5173 &
+cd web && INGUMA_API_URL=http://localhost:8091 npm run dev -- --port 5173 &
 DEV=$!
 sleep 5
 curl -s localhost:5173 | grep -c "Tool A"
@@ -571,7 +571,7 @@ Expected: count ≥ 1 (home lists the fixture tools).
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/enekosarasola/agentpop
+cd /Users/enekosarasola/inguma
 git add web/src/routes web/src/routes/+page.server.ts
 git commit -m "feat(web): home page with search + categories + featured"
 ```
@@ -912,16 +912,16 @@ Create `web/src/routes/categories/[cat]/+page.svelte`:
 Create `web/src/routes/docs/+page.svelte`:
 ```svelte
 <article class="prose mx-auto max-w-3xl px-6 py-10 dark:prose-invert">
-  <h1>Agentpop docs</h1>
+  <h1>Inguma docs</h1>
   <h2>Publishing a tool</h2>
   <p>
-    Add an <code>agentpop.yaml</code> manifest to your tool's repository, then open a PR to the
+    Add an <code>inguma.yaml</code> manifest to your tool's repository, then open a PR to the
     registry listing your repo URL.
   </p>
   <h2>CLI</h2>
-  <pre><code>agentpop install &lt;slug&gt;
-agentpop search &lt;query&gt;
-agentpop doctor
+  <pre><code>inguma install &lt;slug&gt;
+inguma search &lt;query&gt;
+inguma doctor
 </code></pre>
   <h2>Writing a manifest</h2>
   <p>See the project spec for the full schema.</p>
@@ -975,7 +975,7 @@ export default defineConfig({
     command: 'npm run dev -- --port 5173',
     port: 5173,
     reuseExistingServer: !process.env.CI,
-    env: { AGENTPOP_API_URL: process.env.AGENTPOP_API_URL ?? 'http://localhost:8091' }
+    env: { INGUMA_API_URL: process.env.INGUMA_API_URL ?? 'http://localhost:8091' }
   },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }]
 });
@@ -1017,7 +1017,7 @@ From the repo root:
 ```bash
 bin/apid -addr :8091 -corpus internal/api/testdata/corpus -marrow http://127.0.0.1:1 &
 APID=$!
-cd web && AGENTPOP_API_URL=http://localhost:8091 npm run test:e2e
+cd web && INGUMA_API_URL=http://localhost:8091 npm run test:e2e
 cd ..
 kill $APID || true
 ```

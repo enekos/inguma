@@ -1,4 +1,4 @@
-// Package clicmd implements the agentpop CLI subcommands.
+// Package clicmd implements the inguma CLI subcommands.
 // Each command is a function that takes typed Deps + Args for testability.
 package clicmd
 
@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/adapters"
-	"github.com/enekos/agentpop/internal/apiclient"
-	"github.com/enekos/agentpop/internal/lockfile"
-	"github.com/enekos/agentpop/internal/manifest"
-	"github.com/enekos/agentpop/internal/namespace"
-	"github.com/enekos/agentpop/internal/state"
-	"github.com/enekos/agentpop/internal/toolfetch"
+	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/lockfile"
+	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/namespace"
+	"github.com/enekos/inguma/internal/state"
+	"github.com/enekos/inguma/internal/toolfetch"
 )
 
 // InstallDeps bundles injectable dependencies for Install.
@@ -32,7 +32,7 @@ type InstallDeps struct {
 	FetchCLI func(manifest.Tool) (string, error)
 }
 
-// InstallArgs are the CLI flags / args for `agentpop install`.
+// InstallArgs are the CLI flags / args for `inguma install`.
 type InstallArgs struct {
 	Slug      string
 	Harnesses []string // explicit filter; empty = all detected
@@ -42,11 +42,11 @@ type InstallArgs struct {
 
 	// Added in v2:
 	RangeSpec string // empty means "latest"
-	LockDir   string // dir containing agentpop.lock; empty = cwd; no lockfile if "-"
+	LockDir   string // dir containing inguma.lock; empty = cwd; no lockfile if "-"
 	Frozen    bool
 }
 
-// Install is the `agentpop install <slug>` command.
+// Install is the `inguma install <slug>` command.
 func Install(ctx context.Context, d InstallDeps, a InstallArgs) error {
 	if a.Slug == "" && !a.Frozen {
 		return fmt.Errorf("install: slug required")
@@ -169,12 +169,12 @@ func installVersionedFrozen(ctx context.Context, d InstallDeps, a InstallArgs, n
 	lk, err := lockfile.ReadFile(lockPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("install: frozen requires agentpop.lock (not found at %s)", lockPath)
+			return fmt.Errorf("install: frozen requires inguma.lock (not found at %s)", lockPath)
 		}
-		return fmt.Errorf("install: frozen requires agentpop.lock: %w", err)
+		return fmt.Errorf("install: frozen requires inguma.lock: %w", err)
 	}
 	if lk == nil {
-		return fmt.Errorf("install: frozen requires agentpop.lock (empty)")
+		return fmt.Errorf("install: frozen requires inguma.lock (empty)")
 	}
 
 	// Find entry in lockfile.
@@ -215,12 +215,12 @@ func installFrozenAll(ctx context.Context, d InstallDeps, a InstallArgs) error {
 	lk, err := lockfile.ReadFile(lockPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("install: frozen requires agentpop.lock (not found at %s)", lockPath)
+			return fmt.Errorf("install: frozen requires inguma.lock (not found at %s)", lockPath)
 		}
-		return fmt.Errorf("install: frozen requires agentpop.lock: %w", err)
+		return fmt.Errorf("install: frozen requires inguma.lock: %w", err)
 	}
 	if lk == nil || len(lk.Packages) == 0 {
-		return fmt.Errorf("install: frozen requires agentpop.lock (empty)")
+		return fmt.Errorf("install: frozen requires inguma.lock (empty)")
 	}
 
 	for _, entry := range lk.Packages {
@@ -308,13 +308,13 @@ func applyInstall(ctx context.Context, d InstallDeps, a InstallArgs, tool manife
 	return nil
 }
 
-// lockFilePath resolves the path to agentpop.lock from the configured LockDir.
+// lockFilePath resolves the path to inguma.lock from the configured LockDir.
 func lockFilePath(lockDir string) string {
 	dir := lockDir
 	if dir == "" {
 		dir, _ = os.Getwd()
 	}
-	return filepath.Join(dir, "agentpop.lock")
+	return filepath.Join(dir, "inguma.lock")
 }
 
 // writeLockEntry loads (or creates) the lockfile, upserts an entry, and saves.

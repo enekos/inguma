@@ -1,6 +1,6 @@
 # Versioning
 
-Agentpop uses strict semver. The rules here are encoded in `internal/versioning`.
+Inguma uses strict semver. The rules here are encoded in `internal/versioning`.
 
 ## What counts as a version
 
@@ -46,7 +46,7 @@ Prereleases are **only** returned when the spec explicitly matches them. `--rang
 2. Filter by range.
 3. Return the highest of the survivors.
 
-When no slug version is provided and no range is set, Agentpop prefers the explicit `latest.json` file (written by the crawler) and falls back to "highest stable" from the list.
+When no slug version is provided and no range is set, Inguma prefers the explicit `latest.json` file (written by the crawler) and falls back to "highest stable" from the list.
 
 ## Ingest policy
 
@@ -61,8 +61,8 @@ The one exception: `v0.0.0` is synthetic (written when a repo has zero real vers
 See [publishing](publishing.md). In short:
 
 ```sh
-# set version in agentpop.yaml
-agentpop publish          # tags v<version>, pushes, polls ingestion
+# set version in inguma.yaml
+inguma publish          # tags v<version>, pushes, polls ingestion
 ```
 
 Or without the wrapper:
@@ -79,6 +79,6 @@ git push origin v1.2.3
 
 **Can I rename a package?** Transfer the GitHub repo; the new owner is derived at crawl time. Old URLs will need a redirect table (Track B).
 
-**What about pre-1.0 breaking changes?** Agentpop follows semver strictly: in `v0.x.y`, any bump can be breaking. Users pinning `^0.3` are accepting that. Move to `v1.0.0` when you're willing to hold minor bumps backward-compatible.
+**What about pre-1.0 breaking changes?** Inguma follows semver strictly: in `v0.x.y`, any bump can be breaking. Users pinning `^0.3` are accepting that. Move to `v1.0.0` when you're willing to hold minor bumps backward-compatible.
 
 **Why not allow floating refs like `main`?** Reproducibility. The lockfile pins SHA256 + version; `main` can't.

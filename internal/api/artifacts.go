@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/enekos/agentpop/internal/artifacts"
-	"github.com/enekos/agentpop/internal/versioning"
+	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/versioning"
 )
 
 // GET /api/artifacts/{ownerAt}/{slug}/{versionAt}
@@ -47,7 +47,7 @@ func (s *Server) handleArtifact(w http.ResponseWriter, r *http.Request) {
 	defer rc.Close()
 	w.Header().Set("Content-Type", "application/gzip")
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-	w.Header().Set("X-Agentpop-SHA256", sha)
+	w.Header().Set("X-Inguma-SHA256", sha)
 	w.WriteHeader(http.StatusOK)
 	_, _ = io.Copy(w, rc)
 	// Fire-and-forget increment (non-fatal on error).

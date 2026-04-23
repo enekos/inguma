@@ -1,6 +1,6 @@
-# Publishing tools to Agentpop
+# Publishing tools to Inguma
 
-Agentpop is a **git-as-database** package manager: your tool's own GitHub repo is the source of truth. Releases are git tags, not uploads.
+Inguma is a **git-as-database** package manager: your tool's own GitHub repo is the source of truth. Releases are git tags, not uploads.
 
 ## One-time registry submission
 
@@ -12,7 +12,7 @@ tools:
     ref: main
 ```
 
-The registry maintainer merges once your repo contains a valid `agentpop.yaml`.
+The registry maintainer merges once your repo contains a valid `inguma.yaml`.
 
 ## Every release after that
 
@@ -20,16 +20,16 @@ Either tag + push yourself, or use the convenience wrapper:
 
 ```sh
 # 1. Update the manifest version.
-vim agentpop.yaml   # set: version: 1.2.3
+vim inguma.yaml   # set: version: 1.2.3
 
 # 2. Commit and ensure a clean working tree.
 git commit -am "release: v1.2.3"
 
 # 3. Publish.
-agentpop publish
+inguma publish
 ```
 
-`agentpop publish` tags `v1.2.3`, pushes it to `origin`, and polls the marketplace until the new version is ingested. The tag is the release — there is no upload step.
+`inguma publish` tags `v1.2.3`, pushes it to `origin`, and polls the marketplace until the new version is ingested. The tag is the release — there is no upload step.
 
 You can also do it by hand:
 
@@ -40,11 +40,11 @@ git push origin v1.2.3
 
 The crawler picks up new `v<semver>` tags within the hour.
 
-## Minimum `agentpop.yaml`
+## Minimum `inguma.yaml`
 
 ```yaml
 name: "@my-org/my-tool"        # must match the GitHub org that owns the repo
-version: "1.2.3"                # required for `agentpop publish`
+version: "1.2.3"                # required for `inguma publish`
 display_name: "My Tool"
 description: "One-liner shown in search results."
 readme: README.md
