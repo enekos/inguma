@@ -23,11 +23,11 @@ type versionedInstallResponse struct {
 	CLI             cliBlock           `json:"cli"`
 	Snippets        []snippets.Snippet `json:"snippets"`
 	// Track B/C additions: install-time state the client must honor.
-	Yanked        bool               `json:"yanked,omitempty"`
-	Deprecation   string             `json:"deprecation_message,omitempty"`
-	Trust         string             `json:"trust"` // "verified" | "unsigned" | "unverified"
-	Permissions   *permissions.Block `json:"permissions,omitempty"`
-	Advisories    []advisoryMini     `json:"advisories,omitempty"`
+	Yanked      bool               `json:"yanked,omitempty"`
+	Deprecation string             `json:"deprecation_message,omitempty"`
+	Trust       string             `json:"trust"` // "verified" | "unsigned" | "unverified"
+	Permissions *permissions.Block `json:"permissions,omitempty"`
+	Advisories  []advisoryMini     `json:"advisories,omitempty"`
 }
 
 // advisoryMini is the install-time slice of an advisory.

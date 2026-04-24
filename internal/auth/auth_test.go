@@ -25,8 +25,8 @@ type fakeGH struct {
 	orgs []string
 }
 
-func (f *fakeGH) ExchangeCode(string) (string, error)       { return "tok", nil }
-func (f *fakeGH) StartDeviceFlow() (DeviceStart, error)     { return f.nextStart, nil }
+func (f *fakeGH) ExchangeCode(string) (string, error)   { return "tok", nil }
+func (f *fakeGH) StartDeviceFlow() (DeviceStart, error) { return f.nextStart, nil }
 func (f *fakeGH) PollDeviceFlow(string) (string, bool, error) {
 	return f.pollResult.token, f.pollResult.slow, f.pollResult.err
 }

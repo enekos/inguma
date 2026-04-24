@@ -133,11 +133,11 @@ type VersionedInstallResponse struct {
 		Content     string `json:"content"`
 	} `json:"snippets"`
 	// Track B / C: state that install-time consent must surface.
-	Yanked       bool                   `json:"yanked,omitempty"`
-	Deprecation  string                 `json:"deprecation_message,omitempty"`
-	Trust        string                 `json:"trust,omitempty"`
-	Permissions  *permissions.Block     `json:"permissions,omitempty"`
-	Advisories   []InstallAdvisory      `json:"advisories,omitempty"`
+	Yanked      bool               `json:"yanked,omitempty"`
+	Deprecation string             `json:"deprecation_message,omitempty"`
+	Trust       string             `json:"trust,omitempty"`
+	Permissions *permissions.Block `json:"permissions,omitempty"`
+	Advisories  []InstallAdvisory  `json:"advisories,omitempty"`
 }
 
 // InstallAdvisory mirrors the install-time slice of an advisory.

@@ -19,11 +19,11 @@ import (
 // fakeGH minimally satisfies auth.GitHub for API tests (no token exchange).
 type fakeGH struct{}
 
-func (fakeGH) ExchangeCode(string) (string, error)          { return "", nil }
-func (fakeGH) StartDeviceFlow() (auth.DeviceStart, error)   { return auth.DeviceStart{}, nil }
-func (fakeGH) PollDeviceFlow(string) (string, bool, error)  { return "", false, nil }
-func (fakeGH) GetUser(string) (string, int64, error)        { return "", 0, nil }
-func (fakeGH) ListOrgs(string) ([]string, error)            { return nil, nil }
+func (fakeGH) ExchangeCode(string) (string, error)         { return "", nil }
+func (fakeGH) StartDeviceFlow() (auth.DeviceStart, error)  { return auth.DeviceStart{}, nil }
+func (fakeGH) PollDeviceFlow(string) (string, bool, error) { return "", false, nil }
+func (fakeGH) GetUser(string) (string, int64, error)       { return "", 0, nil }
+func (fakeGH) ListOrgs(string) ([]string, error)           { return nil, nil }
 
 func newAuthedServer(t *testing.T, admins ...string) (*Server, *auth.Store, *db.DB) {
 	t.Helper()

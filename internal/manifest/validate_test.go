@@ -121,7 +121,7 @@ func TestValidateWithRegistryOwner(t *testing.T) {
 	base := Tool{
 		Name: "bar", DisplayName: "Bar", Description: "x", Readme: "README.md",
 		License: "MIT", Kind: KindMCP,
-		MCP: &MCPConfig{Transport: "stdio", Command: "x"},
+		MCP:           &MCPConfig{Transport: "stdio", Command: "x"},
 		Compatibility: Compatibility{Harnesses: []string{"claude-code"}, Platforms: []string{"darwin"}},
 	}
 	// Bare name is allowed regardless of registry owner.
