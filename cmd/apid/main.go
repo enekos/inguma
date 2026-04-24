@@ -15,11 +15,16 @@ import (
 	"syscall"
 	"time"
 
+	"strings"
+
 	"github.com/enekos/inguma/internal/adapters/all"
+	"github.com/enekos/inguma/internal/advisories"
 	"github.com/enekos/inguma/internal/api"
 	"github.com/enekos/inguma/internal/artifacts"
+	"github.com/enekos/inguma/internal/auth"
 	"github.com/enekos/inguma/internal/db"
 	"github.com/enekos/inguma/internal/marrow"
+	"github.com/enekos/inguma/internal/pkgstate"
 )
 
 func main() {
@@ -28,6 +33,9 @@ func main() {
 	marrowURL := flag.String("marrow", "http://localhost:8080", "Marrow service base URL")
 	sqlite := flag.String("sqlite", "./inguma.sqlite", "path to SQLite database file")
 	artifactsDir := flag.String("artifacts", "./artifacts", "path to artifacts directory")
+	admins := flag.String("admins", os.Getenv("INGUMA_ADMINS"), "comma-separated admin GitHub logins")
+	ghClientID := flag.String("gh-client-id", os.Getenv("INGUMA_GH_CLIENT_ID"), "GitHub OAuth client id (empty = auth disabled)")
+	ghClientSecret := flag.String("gh-client-secret", os.Getenv("INGUMA_GH_CLIENT_SECRET"), "GitHub OAuth client secret")
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -41,11 +49,21 @@ func main() {
 	store := artifacts.NewFSStore(*artifactsDir)
 
 	s := &api.Server{
-		CorpusDir: *corpus,
-		Marrow:    marrow.New(*marrowURL),
-		Adapters:  all.Default(),
-		Store:     store,
-		DB:        database,
+		CorpusDir:  *corpus,
+		Marrow:     marrow.New(*marrowURL),
+		Adapters:   all.Default(),
+		Store:      store,
+		DB:         database,
+		PkgState:   pkgstate.NewStore(database.SQL()),
+		Advisories: advisories.NewStore(database.SQL()),
+	}
+	if *ghClientID != "" {
+		adminList := splitCSV(*admins)
+		s.AttachAuth(api.NewAuthDeps(
+			auth.NewStore(database.SQL(), adminList),
+			auth.NewGitHub(*ghClientID, *ghClientSecret),
+			adminList,
+		))
 	}
 	srv := &http.Server{
 		Addr:              *addr,
@@ -70,4 +88,20 @@ func main() {
 	defer cancel()
 	_ = srv.Shutdown(shutdownCtx)
 	_ = database.Close()
+}
+
+// splitCSV splits a comma-separated string, trims whitespace, and
+// drops empty entries.
+func splitCSV(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := parts[:0]
+	for _, p := range parts {
+		if t := strings.TrimSpace(p); t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
 }

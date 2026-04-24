@@ -26,6 +26,32 @@ type Adapter interface {
 	Uninstall(slug string) error
 }
 
+// KindAware is implemented by adapters that opt into Track D kinds.
+// Adapters that don't implement this interface are treated as supporting
+// kind=mcp and kind=cli only.
+type KindAware interface {
+	SupportsKind(k manifest.Kind) bool
+	CompatibilityNote(k manifest.Kind) string
+}
+
+// Supports is a convenience helper that checks KindAware with a
+// conservative default of {mcp, cli}.
+func Supports(a Adapter, k manifest.Kind) bool {
+	if ka, ok := a.(KindAware); ok {
+		return ka.SupportsKind(k)
+	}
+	return k == manifest.KindMCP || k == manifest.KindCLI
+}
+
+// Note returns an adapter's compatibility note for a kind, or "" if
+// the adapter doesn't implement KindAware.
+func Note(a Adapter, k manifest.Kind) string {
+	if ka, ok := a.(KindAware); ok {
+		return ka.CompatibilityNote(k)
+	}
+	return ""
+}
+
 // InstallOpts controls a single install invocation.
 type InstallOpts struct {
 	// DryRun prints the diff without applying changes.

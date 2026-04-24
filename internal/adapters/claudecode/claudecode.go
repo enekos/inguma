@@ -86,6 +86,14 @@ func (a *Adapter) Snippet(m manifest.Tool) (snippets.Snippet, error) {
 			return snippets.Snippet{}, err
 		}
 		content = string(b)
+	case manifest.KindSkill:
+		content = skillSnippet(m)
+	case manifest.KindSubagent:
+		content = subagentSnippet(m)
+	case manifest.KindCommand:
+		content = commandSnippet(m)
+	case manifest.KindBundle:
+		content = bundleSnippet(m)
 	default:
 		return snippets.Snippet{}, fmt.Errorf("claudecode: unsupported kind %q", m.Kind)
 	}

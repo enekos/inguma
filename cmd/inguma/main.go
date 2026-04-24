@@ -50,6 +50,18 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runUpgrade(ctx, rest, stdout, stderr)
 	case "publish":
 		return runPublish(ctx, rest, stdout, stderr)
+	case "login":
+		return runLogin(ctx, rest, stdout, stderr)
+	case "logout":
+		return runLogout(ctx, rest, stdout, stderr)
+	case "whoami":
+		return runWhoami(ctx, rest, stdout, stderr)
+	case "yank":
+		return runYank(ctx, rest, stdout, stderr)
+	case "deprecate":
+		return runDeprecate(ctx, rest, stdout, stderr)
+	case "audit":
+		return runAudit(ctx, rest, stdout, stderr)
 	case "-h", "--help", "help":
 		printUsage(stdout)
 		return 0
@@ -72,6 +84,12 @@ Commands:
   doctor     Report harness detection status
   upgrade    Upgrade lockfile-pinned packages to newest patch/minor version
   publish    Tag, push, and poll ingestion of an inguma tool
+  login      Start a GitHub device-flow login
+  logout     Clear the local session
+  whoami     Print the currently authenticated account
+  yank       Mark @owner/slug@version as yanked (warn on install)
+  deprecate  Deprecate a package or version with a message
+  audit      Check inguma.lock against published advisories
 
 Run "inguma <command> -h" for command-specific flags.
 `)
@@ -94,6 +112,8 @@ func runInstall(ctx context.Context, args []string, stdout, stderr io.Writer) in
 	rangeSpec := fs.String("range", "", "semver range, e.g. ^1.2 (versioned slugs only)")
 	lockDir := fs.String("lock-dir", "", "directory containing inguma.lock (default: cwd; use - to disable)")
 	frozen := fs.Bool("frozen", false, "refuse to resolve anything not pinned in inguma.lock")
+	requireSigned := fs.Bool("require-signed", false, "refuse packages that are not trust=verified")
+	withCompanions := fs.String("with-companions", "prompt", "how to handle publisher-declared companion packages: all|none|prompt")
 	slugArg := ""
 	if err := fs.Parse(args); err != nil {
 		return 2
@@ -115,9 +135,11 @@ func runInstall(ctx context.Context, args []string, stdout, stderr io.Writer) in
 		Harnesses: parseHarnesses(*harness),
 		DryRun:    *dryRun,
 		AssumeYes: *yes,
-		RangeSpec: *rangeSpec,
-		LockDir:   *lockDir,
-		Frozen:    *frozen,
+		RangeSpec:     *rangeSpec,
+		LockDir:       *lockDir,
+		Frozen:        *frozen,
+		RequireSigned:  *requireSigned,
+		WithCompanions: *withCompanions,
 	})
 	if err != nil {
 		fmt.Fprintln(stderr, "inguma:", err)
@@ -244,6 +266,112 @@ func runDoctor(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if err := clicmd.Doctor(clicmd.DoctorDeps{Adapters: all.Default(), Stdout: stdout}); err != nil {
+		fmt.Fprintln(stderr, "inguma:", err)
+		return 1
+	}
+	return 0
+}
+
+func runLogin(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("login", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	err := clicmd.Login(ctx, clicmd.LoginDeps{API: apiclient.New(*apiURL), Stdout: stdout})
+	if err != nil {
+		fmt.Fprintln(stderr, "inguma:", err)
+		return 1
+	}
+	return 0
+}
+
+func runLogout(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("logout", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	err := clicmd.Logout(ctx, clicmd.LogoutDeps{API: apiclient.New(*apiURL), Stdout: stdout})
+	if err != nil {
+		fmt.Fprintln(stderr, "inguma:", err)
+		return 1
+	}
+	return 0
+}
+
+func runWhoami(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("whoami", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	err := clicmd.Whoami(ctx, clicmd.WhoamiDeps{API: apiclient.New(*apiURL), Stdout: stdout})
+	if err != nil {
+		fmt.Fprintln(stderr, "inguma:", err)
+		return 1
+	}
+	return 0
+}
+
+func runYank(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("yank", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	version := fs.String("version", "", "version (overrides any embedded @version)")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if fs.NArg() == 0 {
+		fmt.Fprintln(stderr, "yank: @owner/slug[@version] required")
+		return 2
+	}
+	err := clicmd.Yank(ctx, clicmd.YankDeps{API: apiclient.New(*apiURL), Stdout: stdout},
+		clicmd.YankArgs{Slug: fs.Arg(0), Version: *version})
+	if err != nil {
+		fmt.Fprintln(stderr, "inguma:", err)
+		return 1
+	}
+	return 0
+}
+
+func runDeprecate(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("deprecate", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	message := fs.String("message", "", "deprecation message (required)")
+	version := fs.String("version", "", "deprecate only this version (default: whole package)")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	if fs.NArg() == 0 {
+		fmt.Fprintln(stderr, "deprecate: @owner/slug required")
+		return 2
+	}
+	err := clicmd.Deprecate(ctx, clicmd.DeprecateDeps{API: apiclient.New(*apiURL), Stdout: stdout},
+		clicmd.DeprecateArgs{Slug: fs.Arg(0), Message: *message, Version: *version})
+	if err != nil {
+		fmt.Fprintln(stderr, "inguma:", err)
+		return 1
+	}
+	return 0
+}
+
+func runAudit(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("audit", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	apiURL := fs.String("api", defaultAPI, "marketplace API URL")
+	lockDir := fs.String("lock-dir", ".", "directory containing inguma.lock")
+	severity := fs.String("severity", "high", "exit nonzero when any advisory at or above this severity hits (low|medium|high|critical)")
+	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+	err := clicmd.Audit(ctx, clicmd.AuditDeps{API: apiclient.New(*apiURL), Stdout: stdout},
+		clicmd.AuditArgs{LockDir: *lockDir, Severity: *severity})
+	if err != nil {
 		fmt.Fprintln(stderr, "inguma:", err)
 		return 1
 	}

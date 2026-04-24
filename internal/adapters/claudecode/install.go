@@ -15,10 +15,20 @@ import (
 // For kind=cli, Install is a no-op from the harness adapter's perspective —
 // fetching the binary/package is the CLI's job, upstream of adapter.Install.
 func (a *Adapter) Install(m manifest.Tool, o adapters.InstallOpts) error {
-	if m.Kind == manifest.KindCLI {
+	switch m.Kind {
+	case manifest.KindCLI:
 		return nil
-	}
-	if m.Kind != manifest.KindMCP {
+	case manifest.KindMCP:
+		// handled below.
+	case manifest.KindSkill, manifest.KindSubagent, manifest.KindCommand, manifest.KindBundle:
+		// Track D kinds: install materialization is per-kind; the
+		// bundle case is expanded upstream by clicmd before the
+		// adapter is ever called. Skill/subagent/command materializers
+		// land in a follow-up; for now, accept the install so the
+		// harness-aware consent flow works end-to-end. The upstream
+		// state.json record still gets written.
+		return nil
+	default:
 		return fmt.Errorf("claudecode: unsupported kind %q", m.Kind)
 	}
 

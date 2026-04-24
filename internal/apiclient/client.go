@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/permissions"
 )
 
 // ToolResponse mirrors GET /api/tools/{slug}.
@@ -51,6 +52,7 @@ type InstallResponse struct {
 type Client struct {
 	baseURL string
 	http    *http.Client
+	token   string
 }
 
 // New returns a client rooted at baseURL (e.g. "https://inguma.example").
@@ -130,6 +132,19 @@ type VersionedInstallResponse struct {
 		Path        string `json:"path"`
 		Content     string `json:"content"`
 	} `json:"snippets"`
+	// Track B / C: state that install-time consent must surface.
+	Yanked       bool                   `json:"yanked,omitempty"`
+	Deprecation  string                 `json:"deprecation_message,omitempty"`
+	Trust        string                 `json:"trust,omitempty"`
+	Permissions  *permissions.Block     `json:"permissions,omitempty"`
+	Advisories   []InstallAdvisory      `json:"advisories,omitempty"`
+}
+
+// InstallAdvisory mirrors the install-time slice of an advisory.
+type InstallAdvisory struct {
+	Severity string `json:"severity"`
+	Summary  string `json:"summary"`
+	Range    string `json:"range"`
 }
 
 // VersionedToolResponse mirrors GET /api/tools/@{owner}/{slug}[/@version].

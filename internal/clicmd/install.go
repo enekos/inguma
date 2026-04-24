@@ -14,9 +14,11 @@ import (
 
 	"github.com/enekos/inguma/internal/adapters"
 	"github.com/enekos/inguma/internal/apiclient"
+	"github.com/enekos/inguma/internal/bundles"
 	"github.com/enekos/inguma/internal/lockfile"
 	"github.com/enekos/inguma/internal/manifest"
 	"github.com/enekos/inguma/internal/namespace"
+	"github.com/enekos/inguma/internal/permissions"
 	"github.com/enekos/inguma/internal/state"
 	"github.com/enekos/inguma/internal/toolfetch"
 )
@@ -44,6 +46,14 @@ type InstallArgs struct {
 	RangeSpec string // empty means "latest"
 	LockDir   string // dir containing inguma.lock; empty = cwd; no lockfile if "-"
 	Frozen    bool
+
+	// Track C additions:
+	RequireSigned bool // refuse to install anything not trust=verified
+
+	// WithCompanions controls how publisher-declared companion packages
+	// are handled. "" or "prompt" prints the suggestions without
+	// installing; "all" installs every companion; "none" suppresses output.
+	WithCompanions string
 }
 
 // Install is the `inguma install <slug>` command.
@@ -133,6 +143,10 @@ func installVersioned(ctx context.Context, d InstallDeps, a InstallArgs, nm name
 		return err
 	}
 
+	if err := renderConsent(d.Stdout, resp, a.RequireSigned); err != nil {
+		return err
+	}
+
 	// Fetch canonical manifest.
 	toolResp, err := d.API.GetVersionedTool(nm.Owner, nm.Slug, resp.ResolvedVersion)
 	if err != nil {
@@ -140,8 +154,22 @@ func installVersioned(ctx context.Context, d InstallDeps, a InstallArgs, nm name
 	}
 	tool := toolResp.Manifest
 
-	if err := applyInstall(ctx, d, a, tool, fullSlug, resp.ResolvedVersion); err != nil {
+	// Bundle: expand members and recursively install each.
+	if tool.Kind == manifest.KindBundle {
+		if err := installBundle(ctx, d, a, tool, fullSlug); err != nil {
+			return err
+		}
+	} else if err := applyInstall(ctx, d, a, tool, fullSlug, resp.ResolvedVersion); err != nil {
 		return err
+	}
+
+	// Surface (and optionally install) companion packages. Skip during
+	// frozen mode — the lockfile is the contract — and skip for bundles,
+	// which already declare their members hard.
+	if !a.Frozen && tool.Kind != manifest.KindBundle {
+		if err := handleCompanions(ctx, d, a, tool); err != nil {
+			return err
+		}
 	}
 
 	// Write lockfile after successful install (non-dry-run).
@@ -304,6 +332,110 @@ func applyInstall(ctx context.Context, d InstallDeps, a InstallArgs, tool manife
 		if err := st.Save(d.StatePath); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// handleCompanions surfaces publisher-declared companion packages and,
+// when WithCompanions=="all", recursively installs them. Companions
+// already present in state are silently filtered out so a re-install
+// doesn't nag the user with the same suggestions.
+func handleCompanions(ctx context.Context, d InstallDeps, a InstallArgs, tool manifest.Tool) error {
+	if len(tool.Companions) == 0 || a.WithCompanions == "none" {
+		return nil
+	}
+	st, err := state.Load(d.StatePath)
+	if err != nil {
+		return err
+	}
+	pending := make([]manifest.Companion, 0, len(tool.Companions))
+	for _, c := range tool.Companions {
+		base := stripVersionSuffix(c.Slug)
+		if len(st.FindBySlug(base)) > 0 {
+			continue
+		}
+		pending = append(pending, c)
+	}
+	if len(pending) == 0 {
+		return nil
+	}
+	switch a.WithCompanions {
+	case "all":
+		fmt.Fprintf(d.Stdout, "installing %d companion package(s) declared by %s:\n", len(pending), tool.Name)
+		for _, c := range pending {
+			fmt.Fprintf(d.Stdout, "  → %s — %s\n", c.Slug, c.Reason)
+			sub := a
+			sub.Slug = c.Slug
+			sub.RangeSpec = ""
+			// Don't cascade companion-of-companion installs.
+			sub.WithCompanions = "none"
+			if err := Install(ctx, d, sub); err != nil {
+				return fmt.Errorf("companion %s: %w", c.Slug, err)
+			}
+		}
+	default:
+		fmt.Fprintf(d.Stdout, "\nthe publisher recommends %d companion package(s):\n", len(pending))
+		for _, c := range pending {
+			label := string(c.Kind)
+			if label != "" {
+				label = " [" + label + "]"
+			}
+			fmt.Fprintf(d.Stdout, "  • %s%s — %s\n", c.Slug, label, c.Reason)
+		}
+		fmt.Fprintln(d.Stdout, "re-run with --with-companions=all to install them.")
+	}
+	return nil
+}
+
+// installBundle expands a bundle's members and installs each in turn.
+// Per-member env defaults are not threaded into the install call yet
+// — the v2.0 contract only promises that they're validated and
+// surfaced; runtime env plumbing is harness-specific.
+func installBundle(ctx context.Context, d InstallDeps, a InstallArgs, tool manifest.Tool, fullSlug string) error {
+	members, err := bundles.Expand(tool.Bundle, fullSlug)
+	if err != nil {
+		return fmt.Errorf("bundle: %w", err)
+	}
+	fmt.Fprintf(d.Stdout, "bundle %s: %d member(s)\n", fullSlug, len(members))
+	for _, m := range members {
+		sub := a
+		sub.Slug = "@" + m.Owner + "/" + m.Slug
+		if m.Version != "" {
+			sub.Slug += "@" + m.Version
+		}
+		sub.RangeSpec = m.Range
+		if err := Install(ctx, d, sub); err != nil {
+			return fmt.Errorf("bundle member %s: %w", sub.Slug, err)
+		}
+	}
+	return nil
+}
+
+// renderConsent prints the install-time consent block and fails when
+// RequireSigned is set against a non-verified package.
+//
+// This is not an interactive prompt yet — we write the disclosure,
+// warnings, and advisories to stdout unconditionally so the user sees
+// what they're installing. The --y shortcut bypasses only confirmation
+// (see applyInstall); signed/high-severity gating is separate.
+func renderConsent(w io.Writer, resp *apiclient.VersionedInstallResponse, requireSigned bool) error {
+	if resp.Yanked {
+		fmt.Fprintf(w, "warning: %s@%s is yanked\n", resp.Slug, resp.ResolvedVersion)
+	}
+	if resp.Deprecation != "" {
+		fmt.Fprintf(w, "warning: deprecated — %s\n", resp.Deprecation)
+	}
+	for _, adv := range resp.Advisories {
+		fmt.Fprintf(w, "advisory [%s]: %s (%s)\n", adv.Severity, adv.Summary, adv.Range)
+	}
+	if resp.Permissions != nil {
+		permissions.Prompt(w, resp.Permissions)
+	}
+	if resp.Trust != "" {
+		fmt.Fprintf(w, "trust: %s\n", resp.Trust)
+	}
+	if requireSigned && resp.Trust != "verified" {
+		return fmt.Errorf("install: --require-signed refused: trust=%s", resp.Trust)
 	}
 	return nil
 }

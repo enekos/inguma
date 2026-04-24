@@ -38,6 +38,14 @@ func (s *Server) handleArtifact(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "bad_version", "invalid version")
 		return
 	}
+	// Track B: withdrawn versions return 410 Gone.
+	if s.PkgState != nil {
+		st, _ := s.PkgState.Get(owner, slug, v.Canonical())
+		if st.Withdrawn {
+			writeError(w, http.StatusGone, "withdrawn", "this version has been withdrawn")
+			return
+		}
+	}
 	ref := artifacts.Ref{Owner: owner, Slug: slug, Version: v.Canonical()}
 	rc, sha, err := s.Store.Get(ref)
 	if err != nil {

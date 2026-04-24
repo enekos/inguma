@@ -10,9 +10,11 @@ import (
 	"net/http"
 
 	"github.com/enekos/inguma/internal/adapters"
+	"github.com/enekos/inguma/internal/advisories"
 	"github.com/enekos/inguma/internal/artifacts"
 	"github.com/enekos/inguma/internal/db"
 	"github.com/enekos/inguma/internal/marrow"
+	"github.com/enekos/inguma/internal/pkgstate"
 )
 
 // MarrowSearcher is the subset of marrow.Client the server needs.
@@ -33,7 +35,17 @@ type Server struct {
 	Store artifacts.Store
 	// DB is the SQLite download-counter store (optional; skipped if nil).
 	DB *db.DB
+	// Auth wires the GitHub OAuth / session store. Nil disables all
+	// authenticated routes.
+	Auth *AuthDeps
+	// PkgState is the yank/deprecate/withdraw store. Nil = no such routes.
+	PkgState *pkgstate.Store
+	// Advisories is the Track C advisories store. Nil = no such routes.
+	Advisories *advisories.Store
 }
+
+// AttachAuth wires the auth deps. Call once after construction.
+func (s *Server) AttachAuth(store *AuthDeps) { s.Auth = store }
 
 // Handler builds and returns the HTTP handler. Registering routes in one place
 // makes the API surface easy to audit.
@@ -51,7 +63,21 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/install/{ownerAt}/{slug}/{versionAt}", s.handleVersionedInstallAtVersion)
 	mux.HandleFunc("GET /api/search", s.handleSearch)
 	mux.HandleFunc("GET /api/artifacts/{ownerAt}/{slug}/{versionAt}", s.handleArtifact)
-	// Later tasks add more routes here.
+	// Track B: auth + namespace administration.
+	mux.HandleFunc("GET /api/me", s.handleMe)
+	mux.HandleFunc("POST /api/auth/logout", s.handleLogout)
+	mux.HandleFunc("POST /api/auth/device/start", s.handleDeviceStart)
+	mux.HandleFunc("GET /api/auth/device/poll", s.handleDevicePoll)
+	mux.HandleFunc("GET /api/auth/github/callback", s.handleGitHubCallback)
+	mux.HandleFunc("POST /api/tools/{ownerAt}/{slug}/{versionAt}/yank", s.handleYank)
+	mux.HandleFunc("POST /api/tools/{ownerAt}/{slug}/{versionAt}/unyank", s.handleUnyank)
+	mux.HandleFunc("POST /api/tools/{ownerAt}/{slug}/deprecate", s.handleDeprecate)
+	mux.HandleFunc("POST /api/tools/{ownerAt}/{slug}/{versionAt}/withdraw", s.handleWithdraw)
+	mux.HandleFunc("GET /api/publishers/{loginAt}", s.handlePublisher)
+	// Track C: advisories.
+	mux.HandleFunc("GET /api/advisories", s.handleAdvisories)
+	mux.HandleFunc("POST /api/advisories", s.handlePublishAdvisory)
+	mux.HandleFunc("GET /api/tools/{ownerAt}/{slug}/advisories", s.handlePackageAdvisories)
 	return mux
 }
 

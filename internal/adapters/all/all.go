@@ -6,6 +6,8 @@ import (
 	"github.com/enekos/inguma/internal/adapters"
 	"github.com/enekos/inguma/internal/adapters/claudecode"
 	"github.com/enekos/inguma/internal/adapters/cursor"
+	"github.com/enekos/inguma/internal/adapters/mairu"
+	"github.com/enekos/inguma/internal/adapters/pi"
 )
 
 // Default returns a Registry preloaded with the v1 adapters.
@@ -13,5 +15,7 @@ func Default() *adapters.Registry {
 	r := adapters.NewRegistry()
 	r.Register(claudecode.New())
 	r.Register(cursor.New())
+	r.Register(pi.New())
+	r.Register(mairu.New())
 	return r
 }

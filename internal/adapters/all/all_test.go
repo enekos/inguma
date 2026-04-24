@@ -14,7 +14,13 @@ func TestDefault(t *testing.T) {
 	if _, ok := r.Get("cursor"); !ok {
 		t.Error("cursor missing")
 	}
-	if len(r.All()) < 2 {
+	if _, ok := r.Get("pi"); !ok {
+		t.Error("pi missing")
+	}
+	if _, ok := r.Get("mairu"); !ok {
+		t.Error("mairu missing")
+	}
+	if len(r.All()) < 4 {
 		t.Errorf("All len = %d", len(r.All()))
 	}
 }

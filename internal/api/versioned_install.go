@@ -10,6 +10,7 @@ import (
 
 	"github.com/enekos/inguma/internal/corpus"
 	"github.com/enekos/inguma/internal/manifest"
+	"github.com/enekos/inguma/internal/permissions"
 	"github.com/enekos/inguma/internal/snippets"
 	"github.com/enekos/inguma/internal/versioning"
 )
@@ -21,6 +22,19 @@ type versionedInstallResponse struct {
 	SHA256          string             `json:"sha256"`
 	CLI             cliBlock           `json:"cli"`
 	Snippets        []snippets.Snippet `json:"snippets"`
+	// Track B/C additions: install-time state the client must honor.
+	Yanked        bool               `json:"yanked,omitempty"`
+	Deprecation   string             `json:"deprecation_message,omitempty"`
+	Trust         string             `json:"trust"` // "verified" | "unsigned" | "unverified"
+	Permissions   *permissions.Block `json:"permissions,omitempty"`
+	Advisories    []advisoryMini     `json:"advisories,omitempty"`
+}
+
+// advisoryMini is the install-time slice of an advisory.
+type advisoryMini struct {
+	Severity string `json:"severity"`
+	Summary  string `json:"summary"`
+	Range    string `json:"range"`
 }
 
 // GET /api/install/{ownerAt}/{slug}
@@ -121,12 +135,61 @@ func (s *Server) installByName(w http.ResponseWriter, r *http.Request, explicit 
 		sort.Slice(out, func(i, j int) bool { return out[i].HarnessID < out[j].HarnessID })
 	}
 
-	writeJSON(w, http.StatusOK, versionedInstallResponse{
+	resp := versionedInstallResponse{
 		Owner:           owner,
 		Slug:            slug,
 		ResolvedVersion: resolved,
 		SHA256:          sha,
 		CLI:             cliBlock{Command: "inguma install @" + owner + "/" + slug + "@" + resolved},
 		Snippets:        out,
-	})
+		Permissions:     m.Permissions,
+	}
+
+	// Yank / withdraw / deprecate gating.
+	if s.PkgState != nil {
+		st, _ := s.PkgState.Get(owner, slug, resolved)
+		if st.Withdrawn {
+			writeError(w, http.StatusGone, "withdrawn", "this version has been withdrawn")
+			return
+		}
+		resp.Yanked = st.Yanked
+		if msg, _ := s.PkgState.PackageDeprecation(owner, slug); msg != "" {
+			resp.Deprecation = msg
+		} else if st.Deprecated {
+			resp.Deprecation = st.DeprecatedMsg
+		}
+	}
+
+	// Advisories. Convert to the lightweight install-time shape.
+	if s.Advisories != nil {
+		matches, _ := s.Advisories.Matching(owner, slug, resolved)
+		for _, a := range matches {
+			resp.Advisories = append(resp.Advisories, advisoryMini{
+				Severity: a.Severity,
+				Summary:  a.Summary,
+				Range:    a.Range,
+			})
+		}
+	}
+
+	// Trust pill (Track C). Signature lookup lives in the signatures
+	// table; we keep it simple here and fall back to "unsigned".
+	resp.Trust = computeTrustPill(m.Permissions, false /*signed*/, len(resp.Advisories) > 0)
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// computeTrustPill applies the Track C rubric.
+//
+//	green  = "verified"   — signed, declared permissions, no open advisories
+//	orange = "unsigned"   — declares permissions, not signed
+//	red    = "unverified" — declares `any`, or no permissions block
+func computeTrustPill(p *permissions.Block, signed, highAdvisory bool) string {
+	if !p.Declared() || p.HasAny() {
+		return "unverified"
+	}
+	if signed && !highAdvisory {
+		return "verified"
+	}
+	return "unsigned"
 }
