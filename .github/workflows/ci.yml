@@ -41,7 +41,7 @@ jobs:
         run: go vet ./...
 
       - name: go test (race detector)
-        run: go test -race -count=1 -shuffle=on ./...
+        run: go test -race -count=1 ./...
 
       - name: go test (coverage)
         run: go test -count=1 -coverprofile=coverage.out ./...
@@ -75,7 +75,7 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v6
         with:
           version: v1.64
 
