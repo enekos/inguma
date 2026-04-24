@@ -79,6 +79,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.64
+          args: --go=1.24
 
   go-security:
     name: Go Security

@@ -37,8 +37,8 @@ func TestInstall_returnsSnippetPerAdapter(t *testing.T) {
 	if parsed.CLI.Command != "inguma install tool-a" {
 		t.Errorf("cli.command = %q", parsed.CLI.Command)
 	}
-	// all.Default() registers claude-code + cursor
-	if len(parsed.Snippets) != 2 {
+	// all.Default() registers claude-code, cursor, pi, and mairu.
+	if len(parsed.Snippets) != 4 {
 		t.Fatalf("snippets len = %d: %+v", len(parsed.Snippets), parsed.Snippets)
 	}
 	for _, sn := range parsed.Snippets {
