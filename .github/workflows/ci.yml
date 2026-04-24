@@ -2,13 +2,20 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  go:
-    name: Go
+  go-checks:
+    name: Go Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,26 +23,91 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          cache: true
 
-      - name: Download modules
-        run: go mod download
+      - name: Verify go.mod / go.sum
+        run: go mod verify
 
-      - name: Build
+      - name: Check formatting
+        run: |
+          UNFORMATTED=$(gofmt -l .)
+          if [ -n "$UNFORMATTED" ]; then
+            echo "::error::Unformatted Go files:"
+            echo "$UNFORMATTED"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test (race detector)
+        run: go test -race -count=1 -shuffle=on ./...
+
+      - name: go test (coverage)
+        run: go test -count=1 -coverprofile=coverage.out ./...
+
+      - name: Generate coverage summary
+        run: |
+          echo '## Go Coverage Report' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          go tool cover -func=coverage.out >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-coverage
+          path: coverage.out
+          retention-days: 7
+
+      - name: Build all binaries
         run: make build
 
-      - name: Vet
-        run: make vet
+  go-lint:
+    name: Go Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Test
-        run: make test
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
 
-      - name: Lint
-        uses: golangci/golangci-lint-action@v6
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
         with:
           version: latest
 
-  web:
-    name: Web
+  go-security:
+    name: Go Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+
+      - name: gosec
+        uses: securego/gosec@master
+        with:
+          args: '-no-fail -fmt sarif -out gosec.sarif ./...'
+
+      - name: Upload gosec SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: gosec.sarif
+
+  web-checks:
+    name: Web Checks
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,7 +124,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check
+      - name: Svelte + TypeScript check
         run: npm run check
 
       - name: Build
@@ -62,17 +134,16 @@ jobs:
         run: npm run lint
 
       - name: Format check
-        run: npm run format -- --check
+        run: npm run format:check
 
-  e2e:
-    name: E2E
+  web-security:
+    name: Web Security
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
 
       - uses: actions/setup-node@v4
         with:
@@ -80,14 +151,33 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-inguma
+        with:
+          setup-playwright: 'true'
+
       - name: Build apid
         run: make apid
 
-      - name: Install web dependencies
-        run: cd web && npm ci
-
-      - name: Install Playwright browsers
-        run: cd web && npx playwright install --with-deps chromium
-
       - name: Run E2E tests
         run: make test-e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7

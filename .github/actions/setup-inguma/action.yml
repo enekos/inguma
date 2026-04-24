@@ -1,0 +1,43 @@
+name: Setup Inguma
+description: |
+  Shared composite action that sets up Go, Node.js, dependency caches,
+  and optionally installs Playwright browsers for Inguma CI jobs.
+
+inputs:
+  setup-playwright:
+    description: 'Install Playwright browsers and OS dependencies'
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+        cache: true
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: web/package.json
+        cache: npm
+        cache-dependency-path: web/package-lock.json
+
+    - name: Install web dependencies
+      shell: bash
+      run: cd web && npm ci
+
+    - name: Cache Playwright browsers
+      if: inputs.setup-playwright == 'true'
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
+
+    - name: Install Playwright browsers
+      if: inputs.setup-playwright == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: cd web && npx playwright install --with-deps chromium
