@@ -4,7 +4,17 @@ This walks through installing the CLI, finding a tool, and installing it into Cl
 
 ## Install the CLI
 
-From source (the only distribution channel until v2.x ships binaries):
+### macOS / Linux (binary)
+
+The fastest way:
+
+```sh
+curl -sSL https://inguma.dev/install.sh | sh
+```
+
+Or download the latest release for your platform from [GitHub Releases](https://github.com/enekos/inguma/releases) and extract `inguma` into your `PATH`.
+
+### From source
 
 ```sh
 git clone https://github.com/enekos/inguma.git

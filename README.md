@@ -18,12 +18,22 @@ Unlike npm, Inguma is built for agents from the start: versioned manifests, decl
 ## Quick start
 
 ```sh
-# Build from source.
+# macOS / Linux — one-line install
+curl -sSL https://inguma.dev/install.sh | sh
+
+# Or download a release manually from
+# https://github.com/enekos/inguma/releases
+```
+
+```sh
+# Build from source (alternative)
 git clone https://github.com/enekos/inguma.git
 cd inguma
 make build
 sudo install -m 0755 bin/inguma /usr/local/bin/inguma
+```
 
+```sh
 # Find something.
 inguma search github
 

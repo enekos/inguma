@@ -71,7 +71,12 @@ func installWith(m manifest.Tool, have haveFn, binDir string) (string, error) {
 		}
 		return "npm:" + src.Package, nil
 	case "go":
-		cmd := exec.Command("go", "install", src.Module+"@latest")
+		args := []string{"install"}
+		if src.Tags != "" {
+			args = append(args, "-tags", src.Tags)
+		}
+		args = append(args, src.Module+"@latest")
+		cmd := exec.Command("go", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {

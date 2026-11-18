@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.goos }}-${{ matrix.goarch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
+      - name: Build binaries
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          mkdir -p dist
+          for bin in inguma apid crawler; do
+            output="dist/${bin}"
+            if [ "$GOOS" = "windows" ]; then
+              output="${output}.exe"
+            fi
+            go build -trimpath -ldflags "-s -w" -o "$output" ./cmd/$bin
+          done
+
+      - name: Package
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          mkdir -p "dist/pkg"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            cd dist && zip "pkg/inguma_${VERSION}_${{ matrix.goos }}_${{ matrix.goarch }}.zip" inguma.exe apid.exe crawler.exe
+          else
+            cd dist && tar czf "pkg/inguma_${VERSION}_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz" inguma apid crawler
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: inguma-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/pkg/*
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: inguma-*
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

@@ -1,7 +1,192 @@
 tools:
-  - repo: https://github.com/example/tool-a
-    ref: main
-  - repo: https://github.com/example/tool-b
-    ref: v1.2.0
+  # Author's own tools (existing)
   - repo: https://github.com/enekos/mairu
+    ref: master
+  - repo: https://github.com/enekos/marrow
+    ref: master
+
+  # Official & reference MCP servers
+  - repo: https://github.com/modelcontextprotocol/servers
+    ref: main
+
+  # Browser automation & web scraping
+  - repo: https://github.com/browserbase/mcp-server-browserbase
+    ref: main
+  - repo: https://github.com/mendableai/firecrawl-mcp-server
+    ref: main
+  - repo: https://github.com/executeautomation/mcp-playwright
+    ref: main
+
+  # Search
+  - repo: https://github.com/exa-labs/exa-mcp-server
+    ref: main
+  - repo: https://github.com/nickclyde/duckduckgo-mcp-server
+    ref: main
+  - repo: https://github.com/aas-ee/open-websearch-mcp
+    ref: main
+  - repo: https://github.com/6551team/opennews-mcp
+    ref: main
+
+  # Databases
+  - repo: https://github.com/qdrant/mcp-server-qdrant
+    ref: main
+  - repo: https://github.com/neondatabase/mcp-server-neon
+    ref: main
+  - repo: https://github.com/benborla/mcp-server-mysql
+    ref: main
+  - repo: https://github.com/designcomputer/mcp-mysql-server
+    ref: main
+
+  # Cloud & Infrastructure
+  - repo: https://github.com/cloudflare/mcp-server-cloudflare
+    ref: main
+  - repo: https://github.com/manusa/kubernetes-mcp-server
+    ref: main
+  - repo: https://github.com/Flux159/mcp-kubernetes
+    ref: main
+
+  # Developer tools
+  - repo: https://github.com/sooperset/mcp-atlassian
+    ref: main
+  - repo: https://github.com/zereight/gitlab-mcp
+    ref: main
+  - repo: https://github.com/isaacphi/mcp-language-server
+    ref: main
+  - repo: https://github.com/datalayer/jupyter-mcp-server
+    ref: main
+  - repo: https://github.com/anaisbetts/mcp-installer
+    ref: main
+
+  # Productivity & Communication
+  - repo: https://github.com/nspady/google-calendar-mcp
+    ref: main
+  - repo: https://github.com/GongRzhe/gmail-mcp-server
+    ref: main
+  - repo: https://github.com/MarkusPfundstein/mcp-obsidian
+    ref: main
+  - repo: https://github.com/MarkAsCustomer/mcp-send-email
+    ref: main
+
+  # Data & Memory
+  - repo: https://github.com/doobidoo/mcp-memory-service
+    ref: main
+
+  # Finance & Business
+  - repo: https://github.com/stripe/stripe-mcp
+    ref: main
+
+  # UI / Design
+  - repo: https://github.com/21st-dev/magic-mcp
+    ref: main
+  - repo: https://github.com/haris-musa/mcp-server-excel
+    ref: main
+  - repo: https://github.com/aaronjmars/open-dia-mcp
+    ref: main
+
+  # Web data extraction
+  - repo: https://github.com/apify/actors-mcp-server
+    ref: main
+
+  # ─────────────────────────────────────────────────────────────
+  # CLIs — agent-invocable command-line tools (kind: cli)
+  # ─────────────────────────────────────────────────────────────
+
+  # Search & file navigation
+  - repo: https://github.com/BurntSushi/ripgrep
+    ref: master
+  - repo: https://github.com/sharkdp/fd
+    ref: master
+  - repo: https://github.com/junegunn/fzf
+    ref: master
+  - repo: https://github.com/ast-grep/ast-grep
+    ref: main
+
+  # Git & code review
+  - repo: https://github.com/cli/cli
+    ref: trunk
+  - repo: https://github.com/jesseduffield/lazygit
+    ref: master
+  - repo: https://github.com/dandavison/delta
+    ref: main
+  - repo: https://github.com/Wilfred/difftastic
+    ref: master
+  - repo: https://github.com/gitleaks/gitleaks
+    ref: master
+
+  # Data manipulation
+  - repo: https://github.com/jqlang/jq
+    ref: master
+  - repo: https://github.com/mikefarah/yq
+    ref: master
+  - repo: https://github.com/duckdb/duckdb
+    ref: main
+  - repo: https://github.com/BurntSushi/xsv
+    ref: master
+
+  # HTTP clients
+  - repo: https://github.com/httpie/cli
+    ref: master
+  - repo: https://github.com/ducaale/xh
+    ref: master
+
+  # Cloud & infrastructure CLIs
+  - repo: https://github.com/aws/aws-cli
+    ref: v2
+  - repo: https://github.com/hashicorp/terraform
+    ref: main
+  - repo: https://github.com/pulumi/pulumi
+    ref: master
+  - repo: https://github.com/digitalocean/doctl
+    ref: main
+
+  # Kubernetes
+  - repo: https://github.com/helm/helm
+    ref: main
+  - repo: https://github.com/derailed/k9s
+    ref: master
+  - repo: https://github.com/stern/stern
+    ref: master
+
+  # Linters & formatters
+  - repo: https://github.com/astral-sh/ruff
+    ref: main
+  - repo: https://github.com/biomejs/biome
+    ref: main
+  - repo: https://github.com/golangci/golangci-lint
+    ref: main
+  - repo: https://github.com/mvdan/sh
+    ref: master
+  - repo: https://github.com/koalaman/shellcheck
+    ref: master
+
+  # Task runners & dev environments
+  - repo: https://github.com/casey/just
+    ref: master
+  - repo: https://github.com/go-task/task
+    ref: main
+  - repo: https://github.com/jdx/mise
+    ref: main
+  - repo: https://github.com/direnv/direnv
+    ref: master
+
+  # Productivity & inspection
+  - repo: https://github.com/sharkdp/bat
+    ref: master
+  - repo: https://github.com/sharkdp/hyperfine
+    ref: master
+  - repo: https://github.com/watchexec/watchexec
+    ref: main
+  - repo: https://github.com/XAMPPRocky/tokei
+    ref: master
+
+  # AI & LLM CLIs
+  - repo: https://github.com/simonw/llm
+    ref: main
+  - repo: https://github.com/ollama/ollama
+    ref: main
+  - repo: https://github.com/charmbracelet/mods
+    ref: main
+
+  # Networking & local servers
+  - repo: https://github.com/caddyserver/caddy
     ref: master

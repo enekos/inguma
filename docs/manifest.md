@@ -69,12 +69,13 @@ mcp:
 cli:
   install:
     - { type: npm,    package: "@scope/pkg" }
-    - { type: go,     module: "github.com/x/y/cmd/y" }
+    - { type: go,     module: "github.com/x/y/cmd/y", tags: "sqlite_fts5" }
     - { type: binary, url_template: "https://.../dl/{os}-{arch}", sha256_template: "..." }
   bin: my-tool
 ```
 
 - `install` is an ordered list of sources. The CLI picks the first one whose tool (`npm`, `go`, etc.) is on the user's PATH.
+- `go.tags` passes `-tags` to `go install` (e.g. for CGO build tags).
 - `binary.url_template` supports `{os}` and `{arch}` placeholders.
 - `binary.sha256_template` is the verified checksum.
 - `bin` is the command name that will be on PATH after install.

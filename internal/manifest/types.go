@@ -116,6 +116,7 @@ type InstallSource struct {
 	Type           string `yaml:"type" json:"type"` // "npm" | "go" | "binary"
 	Package        string `yaml:"package,omitempty" json:"package,omitempty"`
 	Module         string `yaml:"module,omitempty" json:"module,omitempty"`
+	Tags           string `yaml:"tags,omitempty" json:"tags,omitempty"` // build tags for go install
 	URLTemplate    string `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	SHA256Template string `yaml:"sha256_template,omitempty" json:"sha256_template,omitempty"`
 }
